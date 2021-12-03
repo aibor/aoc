@@ -12,10 +12,7 @@ def find_nums(data_arr, pos=0, maj=True):
         new_arr[int(num[pos])].append(num)
 
     if len(new_arr[0]) == len(new_arr[1]):
-        if maj:
-            major = 1
-        else:
-            major = 0
+        major = 1 if maj else 0
     elif len(new_arr[0]) > len(new_arr[1]):
         major = 0 if maj else 1
     else:
