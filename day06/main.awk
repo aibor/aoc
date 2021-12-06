@@ -1,16 +1,6 @@
-BEGIN {
-  FS = ","
-  days = 80
-}
-
-{
-  for (i=1; i<=NF; i++) {
-    state[$i]++
-  }
-}
-
-END {
-  for (day=1; day<=days; day++) {
+function simulate(state, days) {
+  sum = 0
+  for (day=1; day <=days; day++) {
     wrap = state[0]
     for (i=1; i<=8; i++) {
       state[i-1] = state[i]
@@ -23,6 +13,21 @@ END {
     sum += state[i]
   }
 
-  print "Part 1:", sum
+  return sum
+}
+
+BEGIN {
+  FS = ","
+}
+
+{
+  for (i=1; i<=NF; i++) {
+    state[$i]++
+  }
+}
+
+END {
+  print "Part 1:", simulate(state, 80)
+  print "Part 2:", simulate(state, 256-80)
 }
 
