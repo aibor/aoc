@@ -1,10 +1,54 @@
+function explore_basin(x, y) {
+  delete queue
+  delete explored
+  queue[x"," y]++
+  explored[x "," y]++
+  size = 1
+
+  while (length(queue)) {
+    for (node in queue) {
+      break
+    }
+    delete queue[node]
+    split(node, coords, ",")
+    a = coords[1]
+    b = coords[2]
+    delete keys
+
+    if (a > 1) {
+      keys[a - 1 "," b]++
+    }
+    if (a < rows) {
+      keys[a + 1 "," b]++
+    }
+    if (b > 1) {
+      keys[a "," b - 1]++
+    }
+    if (b < cols) {
+      keys[a "," b + 1]++
+    }
+
+    for (key in keys) {
+      if (!explored[key]) {
+        explored[key]++
+        if (map[key] != 9) {
+          size++
+          queue[key]++
+        }
+      }
+    }
+  }
+
+  return size
+}
+
 BEGIN {
   FS = ""
 }
 
 {
   for (i = 1; i <= NF; i++) {
-    map[NR " " i] = $i
+    map[NR "," i] = $i
   }
   rows = NR
   cols = NF
@@ -12,64 +56,31 @@ BEGIN {
 
 END {
   sum = 0
-  basinnum = 1
 
   for (r = 1; r <= rows; r++) {
     for (c = 1; c <= cols; c++) {
-      delete b
-      h = map[r " " c]
+      h = map[r "," c]
       hu = 9
       hd = 9
       hl = 9
       hr = 9
 
       if (r > 1) {
-        hu = map[r - 1 " " c]
-        b["u"] = basinmap[r - 1 " " c]
+        hu = map[r - 1 "," c]
       }
       if (r < rows) {
-        hd = map[r + 1 " " c]
+        hd = map[r + 1 "," c]
       }
       if (c > 1) {
-        hl = map[r " " c - 1]
-        b["l"] = basinmap[r " " c - 1]
+        hl = map[r "," c - 1]
       }
       if (c < cols) {
-        hr = map[r " " c + 1]
+        hr = map[r "," c + 1]
       }
 
       if (h < hu && h < hd && h < hl && h < hr) {
         sum += 1 + h
-      }
-
-      if (h < 9) {
-        bnum = 0
-        for (dir in b) {
-          if (b[dir]) {
-            bnum = b[dir]
-            break
-          }
-        }
-
-        if (bnum == 0) {
-          if (hu == 9 && r > 1) {
-            for (j = c + 1; j <= cols; j++) {
-              if (map[r " " j] == 9) {
-                break
-              } else if (map[r - 1 " " j] != 9) {
-                bnum = basinmap[r - 1 " " j]
-                break
-              }
-            }
-          }
-        }
-
-        if (bnum == 0) {
-          bnum = basinnum++
-        }
-
-        basinmap[r " " c] = bnum
-        basins[bnum]++
+        basins[r "," c] = explore_basin(r, c)
       }
     }
   }
