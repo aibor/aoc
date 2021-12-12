@@ -6,7 +6,7 @@ function pathfind(path, doublei) {
   double = doublei
 
   for (x in caves) {
-    if (caves[x] !~ /^[[:lower:]]+$/) {
+    if (!lower[caves[x]]) {
       continue
     }
     seen_count[caves[x]]++
@@ -20,7 +20,7 @@ function pathfind(path, doublei) {
     if (c == "end") {
       paths[path "-" c]++
       continue
-    } else if (c ~ /^[[:lower:]]+$/) {
+    } else if (double && lower[c]) {
       skip = 0
       for (seen in caves) {
         if (c == caves[seen]) {
@@ -28,7 +28,7 @@ function pathfind(path, doublei) {
           break
         }
       }
-      if (double && skip) {
+      if (skip) {
         continue
       }
     }
@@ -55,6 +55,12 @@ BEGIN {
 }
 
 END {
+  for (m in map) {
+    if (m ~ /^[[:lower:]]+$/) {
+      lower[m]++
+    }
+  }
+
   delete paths
 
   pathfind("start", 1)
