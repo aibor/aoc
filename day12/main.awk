@@ -16,20 +16,14 @@ function pathfind(path, doublei) {
     }
   }
 
-  for (c in map) {
-    split(c, cn, "-")
-
-    if (cn[1] != cave) {
+  for (c in map[cave]) {
+    if (c == "end") {
+      paths[path "-" c]++
       continue
-    }
-
-    if (cn[2] == "end") {
-      paths[path "-" cn[2]]++
-      continue
-    } else if (cn[2] ~ /^[[:lower:]]+$/) {
+    } else if (c ~ /^[[:lower:]]+$/) {
       skip = 0
       for (seen in caves) {
-        if (cn[2] == caves[seen]) {
+        if (c == caves[seen]) {
           skip = 1
           break
         }
@@ -39,7 +33,7 @@ function pathfind(path, doublei) {
       }
     }
 
-    newpaths[path "-" cn[2]]++
+    newpaths[path "-" c]++
   }
 
   for (p in newpaths) {
@@ -53,10 +47,10 @@ BEGIN {
 
 {
   if ($1 != "end" && $2 != "start") {
-    map[$1 "-" $2]++
+    map[$1][$2]++
   }
   if ($1 != "start" && $2 != "end") {
-    map[$2 "-" $1]++
+    map[$2][$1]++
   }
 }
 
