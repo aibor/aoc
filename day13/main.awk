@@ -13,27 +13,32 @@ function fold(mark) {
   direction = marka[1]
   line = marka[2]
 
-  if (direction == "x") {
-    for (x = line + 1; x <= max_x; x++) {
-      new_x = line - (x - line)
-      for (y = 0; y <= max_y; y++) {
-        if (map[x "," y]) {
-          map[new_x "," y]++
-        }
-        delete map[x "," y]
+  for (p in map) {
+    split(p, pa, ",")
+    x = pa[1]
+    y = pa[2]
+
+    if (direction == "x") {
+      if (x <= line || !map[p]) {
+        continue
       }
+      new_x = line - (x - line)
+      new_y = y
+    } else {
+      if (y <= line || !map[p]) {
+        continue
+      }
+      new_x = x
+      new_y = line - (y - line)
     }
+
+    map[new_x "," new_y]++
+    delete map[p]
+  }
+
+  if (direction == "x") {
     max_x = line - 1
   } else {
-    for (y = line + 1; y <= max_y; y++) {
-      new_y = line - (y - line)
-      for (x = 0; x <= max_x; x++) {
-        if (map[x "," y]) {
-          map[x "," new_y]++
-        }
-        delete map[x "," y]
-      }
-    }
     max_y = line - 1
   }
 }
