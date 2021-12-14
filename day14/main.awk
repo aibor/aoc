@@ -7,25 +7,40 @@ NR == 1 {
 }
 
 END {
-  for (i = 0; i < 10; i++) {
-    n = length(formula)
-    newformula = ""
-    for (j = 1; j <= n; j++){
-      cur = substr(formula, j, 1)
-      fol = substr(formula, j + 1, 1)
-      bet = map[cur fol]
-      newformula = (newformula ? newformula : cur) bet fol
-    }
-    formula = newformula
+  steps = 40
+  low = steps
+  n = split(formula, elema, "")
+  count[elema[n]]++
+
+  for (e = 1; e < n; e++) {
+    cur = elema[e]
+    fol = elema[e + 1]
+    count[cur]++
+    pairs[cur fol]++
   }
 
-  n = length(formula)
-  for (i = 1; i <= n; i++){
-    count[substr(formula, i, 1)]++
+  for (i = 1; i <= steps; i++) {
+    delete newpairs
+    for (p in pairs) {
+      newpairs[p] = pairs[p]
+    }
+
+    for (pair in pairs) {
+      b = map[pair]
+      count[b] += pairs[pair]
+      split(pair, paira, "")
+      newpairs[pair] -= pairs[pair]
+      newpairs[paira[1] b] += pairs[pair]
+      newpairs[b paira[2]] += pairs[pair]
+    }
+
+    delete pairs
+    for (p in newpairs) {
+      pairs[p] = newpairs[p]
+    }
   }
 
   n = asort(count)
 
   print count[n] - count[1]
 }
-
