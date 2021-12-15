@@ -11,22 +11,17 @@ BEGIN {
 }
 
 END {
-  for (p in map) {
-    queue[p]++
-    risk[p] = 100000000000000
-  }
   risk["1,1"] = 0
+  queue["1,1"]
 
   while (length(queue)) {
-    u = "1,1"
     for (p in queue) {
-      if (!queue[u] || (prev[p] && risk[p] < risk[u])) {
+      if (!(u in queue) || risk[p] < risk[u]) {
         u = p
       }
     }
 
     delete queue[u]
-    print u
 
     if (u == rows "," cols) {
       break
@@ -43,13 +38,12 @@ END {
 
     for (key in neigh) {
       v = neigh[key]
-      for (p in queue) {
-        if (p == v) {
-          a = risk[u] + map[v]
-          if (a <= risk[v]) {
-            risk[v] = a
-            prev[v] = u
-          }
+      if (v in map) {
+        a = risk[u] + map[v]
+        if (!risk[v] || a < risk[v]) {
+          risk[v] = a
+          prev[v] = u
+          queue[v]
         }
       }
     }
