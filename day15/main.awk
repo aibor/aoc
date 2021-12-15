@@ -1,16 +1,7 @@
-BEGIN {
-  FS = ""
-}
+function walk(target, risk) {
+  delete risk
+  delete queue
 
-{
-  for (i = 1; i <= NF; i++) {
-    map[NR "," i] = int($i)
-  }
-  rows = NR
-  cols = NF
-}
-
-END {
   risk["1,1"] = 0
   queue["1,1"]
 
@@ -23,7 +14,7 @@ END {
 
     delete queue[u]
 
-    if (u == rows "," cols) {
+    if (u == target) {
       break
     }
 
@@ -48,8 +39,26 @@ END {
       }
     }
   }
+}
 
-  print "Part 1:", risk[rows "," cols]
+
+BEGIN {
+  FS = ""
+}
+
+{
+  for (i = 1; i <= NF; i++) {
+    map[NR "," i] = int($i)
+  }
+  rows = NR
+  cols = NF
+}
+
+END {
+  targetnode = rows "," cols
+  walk(targetnode, part1)
+
+  print "Part 1:", part1[targetnode]
 }
 
 
