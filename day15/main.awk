@@ -1,3 +1,12 @@
+function extendmap(max_x, max_y) {
+  for (sx = 1; sx <= max_x; sx++) {
+    for (sy = 1; sy <= max_y; sy++) {
+      map[sx "," sy] = getmap(sx "," sy)
+    }
+  }
+}
+
+
 function walk(target, risk) {
   delete risk
   delete queue
@@ -29,6 +38,7 @@ function walk(target, risk) {
 
     for (key in neigh) {
       v = neigh[key]
+
       if (v in map) {
         a = risk[u] + map[v]
         if (!risk[v] || a < risk[v]) {
@@ -38,6 +48,33 @@ function walk(target, risk) {
         }
       }
     }
+  }
+}
+
+function getmap(point) {
+  if (point in map) {
+    return map[point]
+  }
+
+  split(point, pointa, ",")
+  x = int(pointa[1])
+  y = int(pointa[2])
+
+  if (x < 1 || y < 1) {
+    return
+  }
+
+  basex = x % rows
+  basey = y % cols
+  addx = int((x -1)/ rows)
+  addy = int((y -1) / cols)
+
+  basep = (basex ? basex : rows) "," (basey ? basey : cols)
+
+  if (basep in map) {
+    basev = map[basep]
+    newv = basev + addx + addy
+    return newv > 9 ? (newv % 10) + 1 : newv
   }
 }
 
@@ -59,6 +96,13 @@ END {
   walk(targetnode, part1)
 
   print "Part 1:", part1[targetnode]
+
+  extendmap(rows * 5, cols * 5)
+  targetnode = rows * 5 "," cols * 5
+  walk(targetnode, part2)
+
+
+  print "Part 2:", part2[targetnode]
 }
 
 
