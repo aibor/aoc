@@ -41,10 +41,12 @@ END {
   version = ""
   type = ""
   stackid = 0
+
   while (i <= length(input)) {
     if (substr(input, i) ~ /^0*$/) {
       break
     }
+
     if (version == "") {
       if (stackid > 0) {
         if (stacklid[stackid] == 0) {
@@ -52,12 +54,12 @@ END {
             stackid--
           }
         } else {
-          stack[stackid]--
-          if (stack[stackid] <= 0) {
+          if (--stack[stackid] <= 0) {
             stackid--
           }
         }
       }
+
       version = bin2dec(substr(input, i, 3))
       i += 3
       versionsum += version
@@ -68,25 +70,28 @@ END {
     # literal
       going = 1
       litval = ""
+
       while (going == 1) {
         going = substr(input, i, 1)
         litval = litval substr(input, i + 1, 4)
         i += 5
       }
       val = bin2dec(litval)
+
       print "lit:", i, version, type, litval, val
       version = ""
       type = ""
     } else {
     # operator
-      lid = substr(input, i, 1)
-      i++
+      lid = substr(input, i++, 1)
       lenbits = (lid  == 0) ? 15 : 11
       len = bin2dec(substr(input, i, lenbits))
       i += lenbits
-      print "opt:", i, version, type, lid, len
+
       stacklid[++stackid] = lid
       stack[stackid] = len
+
+      print "opt:", i, version, type, lid, len
       version = ""
       type = ""
     }
