@@ -1,5 +1,4 @@
-function bin2dec(binstr) {
-  d = 0
+function bin2dec(binstr,    d) {
   n = split(binstr, bina, "")
 
   for (k = 0; k < n; k++) {
@@ -9,8 +8,7 @@ function bin2dec(binstr) {
   return d
 }
 
-function hex2bin(hexnum) {
-  b = ""
+function hex2bin(hexnum,    b) {
   d = strtonum(hexnum)
 
   while (d) {

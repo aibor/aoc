@@ -38,7 +38,7 @@ function get_adjacents(point, adj) {
   }
 }
 
-function flash(coord) {
+function flash(coord,    ad, adj) {
   if (flashed[coord]) {
     return
   }

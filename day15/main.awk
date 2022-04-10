@@ -1,4 +1,4 @@
-function printmap(max_x, max_y) {
+function printmap(max_x, max_y,    sx, sy) {
   for (sx = 1; sx <= max_x; sx++) {
     for (sy = 1; sy <= max_y; sy++) {
       printf getmap(sx "," sy)
@@ -9,9 +9,8 @@ function printmap(max_x, max_y) {
 }
 
 
-function walk(target, risk, sizer, sizec) {
+function walk(target, risk, sizer, sizec,    queue) {
   delete risk
-  delete queue
 
   risk["1,1"] = 0
   queue["1,1"]

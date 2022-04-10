@@ -35,9 +35,9 @@ function arrdiff(longer, shorter) {
 }
 
 
-function getmap(input, nums, map) {
+function getmap(input, nums, map,    seg) {
   delete map
-  delete seg
+
   seg["a"] = arrdiff(nums[3], nums[2])
   map[nums[2]] = 1
   map[nums[3]] = 7

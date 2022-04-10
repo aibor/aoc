@@ -1,6 +1,4 @@
-function explore_basin(x, y) {
-  delete queue
-  delete explored
+function explore_basin(x, y,    queue, explored, keys) {
   queue[x"," y]++
   explored[x "," y]++
   size = 1
@@ -13,7 +11,6 @@ function explore_basin(x, y) {
     split(node, coords, ",")
     a = coords[1]
     b = coords[2]
-    delete keys
 
     if (a > 1) {
       keys[a - 1 "," b]++

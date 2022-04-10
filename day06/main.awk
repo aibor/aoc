@@ -1,5 +1,6 @@
-function simulate(state, days) {
+function simulate(state, days,    sum) {
   sum = 0
+
   for (day=1; day <=days; day++) {
     wrap = state[0]
     for (i=1; i<=8; i++) {

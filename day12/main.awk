@@ -1,6 +1,4 @@
-function pathfind(path, doublei) {
-  delete newpaths
-  delete seen_count
+function pathfind(path, doublei,    caves, newpaths, seen_count, p) {
   n = split(path, caves, "-")
   cave = caves[n]
   double = doublei
