@@ -6,7 +6,7 @@ import (
   "strings"
   "strconv"
 
-  "github.com/aibor/aoc-2021/goutils"
+  "github.com/aibor/aoc/goutils"
 )
 
 func findnums(data []string, pos int, maj bool) string {

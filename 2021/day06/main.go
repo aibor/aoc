@@ -5,7 +5,7 @@ import (
   "strings"
   "strconv"
 
-  "github.com/aibor/aoc-2021/goutils"
+  "github.com/aibor/aoc/goutils"
 )
 
 func simulate(states [9]int, days int) int {

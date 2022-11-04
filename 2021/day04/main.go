@@ -5,7 +5,7 @@ import (
   "strings"
   "strconv"
 
-  "github.com/aibor/aoc-2021/goutils"
+  "github.com/aibor/aoc/goutils"
 )
 
 type boardnum struct {
