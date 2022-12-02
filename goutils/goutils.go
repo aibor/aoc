@@ -1,23 +1,22 @@
 package goutils
 
 import (
-  "bufio"
-  "os"
-  "strings"
+	"bufio"
+	"os"
+	"strings"
 )
 
 func ReadInput() (input []string, err error) {
-  scanner := bufio.NewScanner(os.Stdin)
+	scanner := bufio.NewScanner(os.Stdin)
 
-  for scanner.Scan() {
-    input = append(input, scanner.Text())
-  }
+	for scanner.Scan() {
+		input = append(input, scanner.Text())
+	}
 
-  err = scanner.Err()
-  return
+	err = scanner.Err()
+	return
 }
 
 func SplitInput(input string) []string {
 	return strings.Split(strings.TrimSpace(input), "\n")
 }
-

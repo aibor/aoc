@@ -1,16 +1,16 @@
 package main
 
 import (
-  "fmt"
+	"fmt"
 
-  "github.com/aibor/aoc/goutils"
+	"github.com/aibor/aoc/goutils"
 )
 
 func main() {
-  input, _ := goutils.ReadInput()
+	input, _ := goutils.ReadInput()
 
-  fmt.Println("Part 1:", part01(input))
-  fmt.Println("Part 2:", part02(input))
+	fmt.Println("Part 1:", part01(input))
+	fmt.Println("Part 2:", part02(input))
 }
 
 func scores() map[byte]int {
