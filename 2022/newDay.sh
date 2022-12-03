@@ -95,4 +95,16 @@ func TestPart1Input(t *testing.T) {
 func TestPart2Input(t *testing.T) {
 	assert(t, part2(input), result2)
 }
+
+func BenchmarkPart1(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		part1(input)
+	}
+}
+
+func BenchmarkPart2(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		part2(input)
+	}
+}
 EOF
