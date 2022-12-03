@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/aibor/aoc/goutils"
 )
 
@@ -23,32 +25,26 @@ func part1(input string) string {
 
 func part2(input string) string {
 	var score int
-	lines := goutils.SplitInput(input)
-	for len(lines) > 0 {
+	for lines := goutils.SplitInput(input); len(lines) > 0; lines = lines[3:] {
 		score += priority(findCommonItemInGroup(lines[0:3]))
-		lines = lines[3:]
 	}
 	return fmt.Sprintf("%d", score)
 }
 
 func priority(c rune) int {
 	// Uppercase letters
-	if c < 0x60 {
-		return int(c - 38)
+	if c < 'a' {
+		return int(c - 'A' + 27)
 	}
 	// Lowercase letters
-	return int(c - 96)
+	return int(c - 'a' + 1)
 }
 
 func findCommonItemInRucksack(content string) rune {
-	// Check every item in first compartment for presence in second compartment
-	// and return the first item found in both compartments.
 	l := len(content) / 2
-	for i := 0; i < l; i++ {
-		for j := l; j < 2*l; j++ {
-			if content[i] == content[j] {
-				return rune(content[i])
-			}
+	for _, item := range content[:l] {
+		if strings.ContainsRune(content[l:], item) {
+			return item
 		}
 	}
 
@@ -56,18 +52,10 @@ func findCommonItemInRucksack(content string) rune {
 }
 
 func findCommonItemInGroup(rucksacks []string) rune {
-	// Walk items in first rucksack and search second rucksack for them. Search
-	// third rucksack for items found in the first two and return the first
-	// item found in all three.
-	for _, r0 := range rucksacks[0] {
-		for _, r1 := range rucksacks[1] {
-			if r0 != r1 {
-				continue
-			}
-			for _, r2 := range rucksacks[2] {
-				if r0 == r2 {
-					return r0
-				}
+	for _, item := range rucksacks[0] {
+		if strings.ContainsRune(rucksacks[1], item) {
+			if strings.ContainsRune(rucksacks[2], item) {
+				return item
 			}
 		}
 	}
