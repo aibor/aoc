@@ -72,21 +72,27 @@ var example string
 //go:embed input
 var input string
 
-func TestPart1(t *testing.T) {
-	if r := part1(example); r != exampleResult1 {
-		t.Fatalf("example: got %s\n", r)
-	}
-	if r := part1(input); r != result1 {
-		t.Fatalf("input: got %s\n", r)
+func assert(t *testing.T, result, expectation string) {
+	t.Helper()
+
+	if result != expectation {
+		t.Fatalf("got %s\n", result)
 	}
 }
 
-func TestPart2(t *testing.T) {
-	if r := part2(example); r != exampleResult2 {
-		t.Fatalf("example: got %s\n", r)
-	}
-	if r := part2(input); r != result2 {
-		t.Fatalf("input: got %s\n", r)
-	}
+func TestPart1Example(t *testing.T) {
+	assert(t, part1(example), exampleResult1)
+}
+
+func TestPart2Example(t *testing.T) {
+	assert(t, part2(example), exampleResult2)
+}
+
+func TestPart1Input(t *testing.T) {
+	assert(t, part1(input), result1)
+}
+
+func TestPart2Input(t *testing.T) {
+	assert(t, part2(input), result2)
 }
 EOF
