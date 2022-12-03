@@ -15,63 +15,35 @@ var (
 )
 
 func part1(input string) string {
-	var score int
-	s := scores()
+	var result int
 
 	for _, line := range goutils.SplitInput(input) {
-		op := s[line[0]]
-		me := s[line[2]]
-		score += me
+		op := int(line[0] - 'A' + 1)
+		me := int(line[2] - 'X' + 1)
+		result += me
 		switch me - op {
 		case 0:
-			score += 3
+			result += 3
 		case 1, -2:
-			score += 6
+			result += 6
 		}
 	}
 
-	return fmt.Sprintf("%d", score)
+	return fmt.Sprintf("%d", result)
 }
 
 func part2(input string) string {
-	var score int
-
-	s := scores()
+	var result int
 
 	for _, line := range goutils.SplitInput(input) {
-		var me int
-		op := s[line[0]]
-		res := rune(line[2])
-		switch res {
-		case 'X':
-			me = op - 1
-		case 'Y':
-			score += 3
-			me = op
-		case 'Z':
-			score += 6
-			me = op + 1
-		}
-		switch me {
-		case 0:
-			score += 3
-		case 4:
-			score += 1
-		default:
-			score += me
-		}
+		op := int(line[0] - 'A' + 1)
+		// result value -- 0: lose, 1: draw, 2: win
+		res := int(line[2] - 'X')
+		// add round outcome
+		result += res * 3
+		// add shape value
+		result += (op+1+res)%3 + 1
 	}
 
-	return fmt.Sprintf("%d", score)
-}
-
-func scores() map[byte]int {
-	return map[byte]int{
-		byte('A'): 1,
-		byte('B'): 2,
-		byte('C'): 3,
-		byte('X'): 1,
-		byte('Y'): 2,
-		byte('Z'): 3,
-	}
+	return fmt.Sprintf("%d", result)
 }
