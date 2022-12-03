@@ -2,15 +2,33 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/aibor/aoc/goutils"
 )
 
-func main() {
-	input, _ := goutils.ReadInput()
+var (
+	exampleResult1 = "157"
+	exampleResult2 = "70"
 
-	fmt.Println("Part 1:", part01(input))
-	fmt.Println("Part 2:", part02(input))
+	result1 = "8240"
+	result2 = "2587"
+)
+
+func part1(input string) string {
+	var score int
+	for _, rucksack := range goutils.SplitInput(input) {
+		score += priority(findCommonItemInRucksack(rucksack))
+	}
+	return fmt.Sprintf("%d", score)
+}
+
+func part2(input string) string {
+	var score int
+	lines := goutils.SplitInput(input)
+	for len(lines) > 0 {
+		score += priority(findCommonItemInGroup(lines[0:3]))
+		lines = lines[3:]
+	}
+	return fmt.Sprintf("%d", score)
 }
 
 func priority(c rune) int {
@@ -55,20 +73,4 @@ func findCommonItemInGroup(rucksacks []string) rune {
 	}
 
 	return 0
-}
-
-func part01(input []string) string {
-	var score int
-	for _, rucksack := range input {
-		score += priority(findCommonItemInRucksack(rucksack))
-	}
-	return fmt.Sprintf("%d", score)
-}
-
-func part02(input []string) string {
-	var score int
-	for i := 0; i < len(input); i += 3 {
-		score += priority(findCommonItemInGroup(input[i : i+3]))
-	}
-	return fmt.Sprintf("%d", score)
 }

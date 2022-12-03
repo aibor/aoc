@@ -6,29 +6,19 @@ import (
 	"github.com/aibor/aoc/goutils"
 )
 
-func main() {
-	input, _ := goutils.ReadInput()
+var (
+	exampleResult1 = "15"
+	exampleResult2 = "12"
 
-	fmt.Println("Part 1:", part01(input))
-	fmt.Println("Part 2:", part02(input))
-}
+	result1 = "13446"
+	result2 = "13509"
+)
 
-func scores() map[byte]int {
-	return map[byte]int{
-		byte('A'): 1,
-		byte('B'): 2,
-		byte('C'): 3,
-		byte('X'): 1,
-		byte('Y'): 2,
-		byte('Z'): 3,
-	}
-}
-
-func part01(input []string) string {
+func part1(input string) string {
 	var score int
 	s := scores()
 
-	for _, line := range input {
+	for _, line := range goutils.SplitInput(input) {
 		op := s[line[0]]
 		me := s[line[2]]
 		score += me
@@ -43,12 +33,12 @@ func part01(input []string) string {
 	return fmt.Sprintf("%d", score)
 }
 
-func part02(input []string) string {
+func part2(input string) string {
 	var score int
 
 	s := scores()
 
-	for _, line := range input {
+	for _, line := range goutils.SplitInput(input) {
 		var me int
 		op := s[line[0]]
 		res := rune(line[2])
@@ -73,4 +63,15 @@ func part02(input []string) string {
 	}
 
 	return fmt.Sprintf("%d", score)
+}
+
+func scores() map[byte]int {
+	return map[byte]int{
+		byte('A'): 1,
+		byte('B'): 2,
+		byte('C'): 3,
+		byte('X'): 1,
+		byte('Y'): 2,
+		byte('Z'): 3,
+	}
 }

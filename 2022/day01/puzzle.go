@@ -7,17 +7,18 @@ import (
 	"github.com/aibor/aoc/goutils"
 )
 
-func main() {
-	input, _ := goutils.ReadInput()
+var (
+	exampleResult1 = "24000"
+	exampleResult2 = "45000"
 
-	fmt.Println("Part 1:", part01(input))
-	fmt.Println("Part 2:", part02(input))
-}
+	result1 = "68467"
+	result2 = "203420"
+)
 
-func part01(input []string) string {
+func part1(input string) string {
 	var cal, max int
 
-	for _, line := range input {
+	for _, line := range goutils.SplitInput(input) {
 		if cal > max {
 			max = cal
 		}
@@ -32,11 +33,11 @@ func part01(input []string) string {
 	return fmt.Sprintf("%d", max)
 }
 
-func part02(input []string) string {
+func part2(input string) string {
 	var cal, maxsum int
 	cals := make([]int, 0)
 
-	for _, line := range input {
+	for _, line := range goutils.SplitInput(input) {
 		if line == "" {
 			cals = append(cals, cal)
 			cal = 0
