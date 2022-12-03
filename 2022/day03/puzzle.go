@@ -16,19 +16,36 @@ var (
 )
 
 func part1(input string) string {
-	var score int
+	var result int
+
 	for _, rucksack := range goutils.SplitInput(input) {
-		score += priority(findCommonItemInRucksack(rucksack))
+		half := len(rucksack) / 2
+		for _, item := range rucksack[:half] {
+			if strings.ContainsRune(rucksack[half:], item) {
+				result += priority(item)
+				break
+			}
+		}
 	}
-	return fmt.Sprintf("%d", score)
+
+	return fmt.Sprintf("%d", result)
 }
 
 func part2(input string) string {
-	var score int
-	for lines := goutils.SplitInput(input); len(lines) > 0; lines = lines[3:] {
-		score += priority(findCommonItemInGroup(lines[0:3]))
+	var result int
+
+	rucksacks := goutils.SplitInput(input)
+	for ; len(rucksacks) > 0; rucksacks = rucksacks[3:] {
+		for _, item := range rucksacks[0] {
+			if strings.ContainsRune(rucksacks[1], item) &&
+				strings.ContainsRune(rucksacks[2], item) {
+				result += priority(item)
+				break
+			}
+		}
 	}
-	return fmt.Sprintf("%d", score)
+
+	return fmt.Sprintf("%d", result)
 }
 
 func priority(c rune) int {
@@ -38,27 +55,4 @@ func priority(c rune) int {
 	}
 	// Lowercase letters
 	return int(c - 'a' + 1)
-}
-
-func findCommonItemInRucksack(content string) rune {
-	l := len(content) / 2
-	for _, item := range content[:l] {
-		if strings.ContainsRune(content[l:], item) {
-			return item
-		}
-	}
-
-	return 0
-}
-
-func findCommonItemInGroup(rucksacks []string) rune {
-	for _, item := range rucksacks[0] {
-		if strings.ContainsRune(rucksacks[1], item) {
-			if strings.ContainsRune(rucksacks[2], item) {
-				return item
-			}
-		}
-	}
-
-	return 0
 }
