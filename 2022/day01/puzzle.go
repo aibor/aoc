@@ -3,8 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
-
-	"github.com/aibor/aoc/goutils"
+	"strings"
 )
 
 var (
@@ -16,37 +15,36 @@ var (
 )
 
 func part1(input string) string {
-	var cal, max int
+	var cal, result int
 
-	for _, line := range goutils.SplitInput(input) {
-		if cal > max {
-			max = cal
-		}
+	for _, line := range strings.Split(input, "\n") {
 		if line == "" {
 			cal = 0
 		} else {
 			c, _ := strconv.Atoi(line)
 			cal += c
+			if cal > result {
+				result = cal
+			}
 		}
 	}
 
-	return fmt.Sprintf("%d", max)
+	return fmt.Sprintf("%d", result)
 }
 
 func part2(input string) string {
-	var cal, maxsum int
-	cals := make([]int, 0)
+	var i, result int
 
-	for _, line := range goutils.SplitInput(input) {
+	cals := make([]int, 1, 256)
+	for _, line := range strings.Split(input, "\n") {
 		if line == "" {
-			cals = append(cals, cal)
-			cal = 0
+			cals = append(cals, 0)
+			i++
 		} else {
 			c, _ := strconv.Atoi(line)
-			cal += c
+			cals[i] += c
 		}
 	}
-	cals = append(cals, cal)
 
 	for j := 0; j < 3; j++ {
 		var maxk int
@@ -55,9 +53,9 @@ func part2(input string) string {
 				maxk = k
 			}
 		}
-		maxsum += cals[maxk]
+		result += cals[maxk]
 		cals[maxk] = 0
 	}
 
-	return fmt.Sprintf("%d", maxsum)
+	return fmt.Sprintf("%d", result)
 }
