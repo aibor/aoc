@@ -3,8 +3,6 @@ package main
 import (
 	"strconv"
 	"strings"
-
-	"github.com/aibor/aoc/goutils"
 )
 
 var (
@@ -18,7 +16,7 @@ var (
 func part1(input string) string {
 	var result int
 
-	for _, rucksack := range goutils.SplitInput(input) {
+	for _, rucksack := range strings.Split(input, "\n") {
 		half := len(rucksack) / 2
 		for _, item := range rucksack[:half] {
 			if strings.ContainsRune(rucksack[half:], item) {
@@ -34,8 +32,7 @@ func part1(input string) string {
 func part2(input string) string {
 	var result int
 
-	rucksacks := goutils.SplitInput(input)
-	for ; len(rucksacks) > 0; rucksacks = rucksacks[3:] {
+	for rucksacks := strings.Split(input, "\n"); len(rucksacks) > 0; rucksacks = rucksacks[3:] {
 		for _, item := range rucksacks[0] {
 			if strings.ContainsRune(rucksacks[1], item) &&
 				strings.ContainsRune(rucksacks[2], item) {

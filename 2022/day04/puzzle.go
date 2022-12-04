@@ -2,8 +2,7 @@ package main
 
 import (
 	"strconv"
-
-	"github.com/aibor/aoc/goutils"
+	"strings"
 )
 
 var (
@@ -18,7 +17,7 @@ func part1(input string) string {
 	var result int
 
 	var s [4]int
-	for _, line := range goutils.SplitInput(input) {
+	for _, line := range strings.Split(input, "\n") {
 		parseSections(line, &s)
 		if s[0] <= s[2] && s[1] >= s[3] || s[0] >= s[2] && s[1] <= s[3] {
 			result++
@@ -32,7 +31,7 @@ func part2(input string) string {
 	var result int
 
 	var s [4]int
-	for _, line := range goutils.SplitInput(input) {
+	for _, line := range strings.Split(input, "\n") {
 		parseSections(line, &s)
 		if s[1] < s[2] || s[3] < s[0] {
 			continue

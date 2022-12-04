@@ -26,8 +26,7 @@ package main
 
 import (
 	"strconv"
-
-	"github.com/aibor/aoc/goutils"
+	"strings"
 )
 
 var (
@@ -41,7 +40,7 @@ var (
 func part1(input string) string {
 	var result int
 
-	for _, line := range goutils.SplitInput(input) {
+	for _, line := range strings.Split(input, "\n") {
 		_ = line
 	}
 
@@ -51,7 +50,7 @@ func part1(input string) string {
 func part2(input string) string {
 	var result int
 
-	for _, line := range goutils.SplitInput(input) {
+	for _, line := range strings.Split(input, "\n") {
 		_ = line
 	}
 
