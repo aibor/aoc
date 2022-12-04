@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/aibor/aoc/goutils"
@@ -26,7 +25,7 @@ func part1(input string) string {
 		}
 	}
 
-	return fmt.Sprintf("%d", result)
+	return strconv.Itoa(result)
 }
 
 func part2(input string) string {
@@ -41,7 +40,7 @@ func part2(input string) string {
 		result++
 	}
 
-	return fmt.Sprintf("%d", result)
+	return strconv.Itoa(result)
 }
 
 func parseSections(line string, sections *[4]int) {

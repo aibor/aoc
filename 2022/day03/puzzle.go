@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/aibor/aoc/goutils"
@@ -28,7 +28,7 @@ func part1(input string) string {
 		}
 	}
 
-	return fmt.Sprintf("%d", result)
+	return strconv.Itoa(result)
 }
 
 func part2(input string) string {
@@ -45,7 +45,7 @@ func part2(input string) string {
 		}
 	}
 
-	return fmt.Sprintf("%d", result)
+	return strconv.Itoa(result)
 }
 
 func priority(c rune) int {

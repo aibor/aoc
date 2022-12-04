@@ -25,7 +25,7 @@ cat > "$dir/puzzle.go" <<EOF
 package main
 
 import (
-	"fmt"
+	"strconv"
 
 	"github.com/aibor/aoc/goutils"
 )
@@ -45,7 +45,7 @@ func part1(input string) string {
 		_ = line
 	}
 
-	return fmt.Sprintf("%d", result)
+	return strconv.Itoa(result)
 }
 
 func part2(input string) string {
@@ -55,6 +55,6 @@ func part2(input string) string {
 		_ = line
 	}
 
-	return fmt.Sprintf("%d", result)
+	return strconv.Itoa(result)
 }
 EOF

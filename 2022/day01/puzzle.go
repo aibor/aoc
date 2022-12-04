@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -29,7 +28,7 @@ func part1(input string) string {
 		}
 	}
 
-	return fmt.Sprintf("%d", result)
+	return strconv.Itoa(result)
 }
 
 func part2(input string) string {
@@ -57,5 +56,5 @@ func part2(input string) string {
 		cals[maxk] = 0
 	}
 
-	return fmt.Sprintf("%d", result)
+	return strconv.Itoa(result)
 }
