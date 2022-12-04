@@ -1,0 +1,32 @@
+goos: linux
+goarch: amd64
+pkg: github.com/aibor/aoc/2022/day01
+cpu: AMD Ryzen 5 5600G with Radeon Graphics
+BenchmarkPart1-12    	   27859	     43146 ns/op	   40965 B/op	       2 allocs/op
+BenchmarkPart2-12    	   35238	     33543 ns/op	   40968 B/op	       2 allocs/op
+PASS
+ok  	github.com/aibor/aoc/2022/day01	3.168s
+goos: linux
+goarch: amd64
+pkg: github.com/aibor/aoc/2022/day02
+cpu: AMD Ryzen 5 5600G with Radeon Graphics
+BenchmarkPart1-12    	   31200	     38642 ns/op	   40965 B/op	       2 allocs/op
+BenchmarkPart2-12    	   41773	     28335 ns/op	   40965 B/op	       2 allocs/op
+PASS
+ok  	github.com/aibor/aoc/2022/day02	3.072s
+goos: linux
+goarch: amd64
+pkg: github.com/aibor/aoc/2022/day03
+cpu: AMD Ryzen 5 5600G with Radeon Graphics
+BenchmarkPart1-12    	   62287	     19300 ns/op	    4868 B/op	       2 allocs/op
+BenchmarkPart2-12    	   75376	     15613 ns/op	    4868 B/op	       2 allocs/op
+PASS
+ok  	github.com/aibor/aoc/2022/day03	2.738s
+goos: linux
+goarch: amd64
+pkg: github.com/aibor/aoc/2022/day04
+cpu: AMD Ryzen 5 5600G with Radeon Graphics
+BenchmarkPart1-12    	   24706	     49610 ns/op	   16387 B/op	       2 allocs/op
+BenchmarkPart2-12    	   29408	     38832 ns/op	   16387 B/op	       2 allocs/op
+PASS
+ok  	github.com/aibor/aoc/2022/day04	3.275s
