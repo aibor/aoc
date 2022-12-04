@@ -30,11 +30,11 @@ import (
 )
 
 var (
-	exampleResult1 = ""
-	exampleResult2 = ""
+	exampleResult1 = "0"
+	exampleResult2 = "0"
 
-	result1 = ""
-	result2 = ""
+	result1 = "0"
+	result2 = "0"
 )
 
 func part1(input string) string {
