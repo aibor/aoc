@@ -1,0 +1,8 @@
+goos: linux
+goarch: amd64
+pkg: github.com/aibor/aoc/2022/day05
+cpu: 11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz
+BenchmarkPart1-8   	   18662	     65594 ns/op	   59272 B/op	     541 allocs/op
+BenchmarkPart2-8   	   17091	     70995 ns/op	   59272 B/op	     541 allocs/op
+PASS
+ok  	github.com/aibor/aoc/2022/day05	3.801s
