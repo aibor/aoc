@@ -2,20 +2,14 @@ package main
 
 import (
 	_ "embed"
-	"strings"
 	"testing"
 )
 
-var (
-	//go:embed example
-	example_raw string
+//go:embed example
+var example string
 
-	//go:embed input
-	input_raw string
-
-	example = strings.TrimSpace(example_raw)
-	input   = strings.TrimSpace(input_raw)
-)
+//go:embed input
+var input string
 
 func assert(t *testing.T, result, expectation string) {
 	t.Helper()
