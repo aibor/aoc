@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -14,15 +15,14 @@ var (
 )
 
 func part1(input string) string {
-	parts := strings.Split(input, "\n\n")
-	start := strings.Split(parts[0], "\n")
-	yard := newYard(start)
+	yard, movements := newYard(input)
 
 	var amount, from, to int
-	for _, line := range strings.Split(parts[1], "\n") {
-		if n, _ := fmt.Sscanf(line, "move %d from %d to %d", &amount, &from, &to); n != 3 {
+	for _, line := range movements {
+		if line == "" {
 			continue
 		}
+		amount, from, to = parseInst(line)
 		for i := 0; i < amount; i++ {
 			yard.move(from - 1, to - 1)
 		}
@@ -32,16 +32,16 @@ func part1(input string) string {
 }
 
 func part2(input string) string {
-	parts := strings.Split(input, "\n\n")
-	start := strings.Split(parts[0], "\n")
-	yard := newYard(start)
+	yard, movements := newYard(input)
 
 	var amount, from, to int
-	for _, line := range strings.Split(parts[1], "\n") {
-		if n, _ := fmt.Sscanf(line, "move %d from %d to %d", &amount, &from, &to); n != 3 {
+	crates := make([]rune, 0, 64)
+	for _, line := range movements {
+		if line == "" {
 			continue
 		}
-		crates := make([]rune,0 )
+		amount, from, to = parseInst(line)
+		crates = crates[:0]
 		for i := 0; i < amount; i++ {
 			crates = append(crates, yard[from - 1].pop())
 		}
@@ -53,10 +53,30 @@ func part2(input string) string {
 	return yard.top()
 }
 
+func parseInst(inst string) (amount, from, to int) {
+	var prev, s int
+	for idx, r := range inst {
+		if r == ' ' {
+			s++
+			switch s {
+			case 2:
+				amount, _ = strconv.Atoi(inst[prev:idx])
+			case 4:
+				from, _ = strconv.Atoi(inst[prev:idx])
+			}
+			prev = idx + 1
+		}
+	}
+	to, _ = strconv.Atoi(inst[prev:])
+	return
+}
+
 type stacks []*stack
 
-func newYard(start []string) stacks {
-	yard := stacks{}
+func newYard(input string) (stacks, []string) {
+	parts := strings.SplitN(input, "\n\n", 2)
+	start := strings.SplitN(parts[0], "\n", 16)
+	yard := make(stacks, 0, 10)
 
 	for idx, r := range start[len(start) - 1] {
 		if r < '0' || r > '9' {
@@ -74,7 +94,7 @@ func newYard(start []string) stacks {
 		}
 	}
 
-	return yard
+	return yard, strings.SplitN(parts[1], "\n", 512)
 }
 
 func (s *stacks) top() string {
@@ -89,9 +109,9 @@ func (s *stacks) top() string {
 }
 
 func (s *stacks) add() *stack {
-	e := &stack{}
-	*s = append(*s, e)
-	return e
+	e := make(stack, 0, 64)
+	*s = append(*s, &e)
+	return &e
 }
 
 func (s *stacks) move(from, to int) {
