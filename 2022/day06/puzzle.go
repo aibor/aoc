@@ -37,20 +37,23 @@ func part2(input string) string {
 	return strings.Join(result, ",")
 }
 
-func findMarker(s string, l int) int {
-	for i := l; i < len(s); i++ {
-		if isMarker(s[i-l:i]) {
+func findMarker(message string, length int) int {
+	var idx int
+	for i := length; i < len(message); i += idx + 1 {
+		idx = firstNonUniqueIndex(message[i-length:i], length)
+		if idx == length {
 			return i
 		}
 	}
 	return 0
 }
 
-func isMarker(chunk string) bool {
-	for idx, r := range chunk {
+func firstNonUniqueIndex(chunk string, length int) int {
+	l := len(chunk)
+	for idx, r := range chunk[:l-1] {
 		if strings.LastIndexByte(chunk, byte(r)) != idx {
-			return false
+			return idx
 		}
 	}
-	return true
+	return l
 }
