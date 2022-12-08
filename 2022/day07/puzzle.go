@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
-	"text/scanner"
+
+	"github.com/aibor/aoc/goutils"
 )
 
 var (
@@ -17,7 +17,7 @@ var (
 
 func part1(input string) string {
 	var result int
-	sizes := getSizes(input)
+	sizes := getSizes(goutils.SplitInput(input))
 
 	for _, size := range sizes {
 		if size <= 100000 {
@@ -29,8 +29,8 @@ func part1(input string) string {
 }
 
 func part2(input string) string {
-	sizes := getSizes(input)
-	l := "[/]"
+	sizes := getSizes(goutils.SplitInput(input))
+	l := "/"
 	unused := 70000000 - sizes[l]
 
 	for d, size := range sizes {
@@ -45,7 +45,7 @@ func part2(input string) string {
 type stack []string
 
 func(s stack) String() string {
-	return fmt.Sprintf("% s", []string(s))
+	return strings.Join(s, "/")
 }
 
 func (s *stack) push(e string) {
@@ -70,34 +70,26 @@ func (s *stack) last() string {
 	return (*s)[l-1]
 }
 
-
-func getSizes(input string) map[string]int {
-	var inst scanner.Scanner
-	var t, last string
-	inst.Init(strings.NewReader(strings.TrimSpace(input)))
+func getSizes(input []string) map[string]int {
+	var line string
+	var size int
 	dirstack := stack{}
 	sizes := make(map[string]int,64)
 
-
-	for tok := inst.Scan(); tok != scanner.EOF; tok = inst.Scan() {
-		t = inst.TokenText()
+	for _, line = range input {
 		switch {
-		case last == "cd":
-			if t == "." {
-				if inst.Peek() == '.' {
-					dirstack.pop()
-				}
+		case strings.Contains(line, " cd "):
+			if line[5:] == ".." {
+				dirstack.pop()
 			} else {
-				dirstack.push(t)
+				dirstack.push(line[5:])
 			}
-		case t[0]>= '0' && t[0]<='9':
-			size, _ := strconv.Atoi(t)
+		case line[0]>= '0' && line[0]<='9':
+			size, _ = strconv.Atoi(line[:strings.Index(line, " ")])
 			for l := len(dirstack); l > 0; l-- {
 				sizes[dirstack[:l].String()] += size
 			}
 		}
-
-		last = t
 	}
 	return sizes
 }
