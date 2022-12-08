@@ -23,10 +23,10 @@ func part1(input string) string {
 	// edge visible
 	result += rows*2 + (cols-2)*2
 
-	for i, l := range lines[1:rows-1] {
-		for j, r := range l[1:cols -1] {
+	for i, l := range lines[1 : rows-1] {
+		for j, r := range l[1 : cols-1] {
 			if visibleX(r, l, j+1, cols, -1) || visibleX(r, l, j+1, cols, 1) ||
-			visibleY(r, lines, j+1, i+1, rows, -1) || visibleY(r, lines, j+1, i+1, rows, 1) {
+				visibleY(r, lines, j+1, i+1, rows, -1) || visibleY(r, lines, j+1, i+1, rows, 1) {
 				result += 1
 			}
 		}
@@ -45,7 +45,7 @@ func part2(input string) string {
 	for i, l := range lines {
 		for j, r := range l {
 			dist = distanceX(r, l, j, cols, -1) * distanceX(r, l, j, cols, 1) *
-			distanceY(r, lines, j, i, rows, -1) * distanceY(r, lines, j, i, rows, 1)
+				distanceY(r, lines, j, i, rows, -1) * distanceY(r, lines, j, i, rows, 1)
 			if dist > result {
 				result = dist
 			}
@@ -56,7 +56,7 @@ func part2(input string) string {
 }
 
 func visibleX(r rune, line string, start, max, dir int) bool {
-	for x := start+dir; x >= 0 && x < max; x += dir {
+	for x := start + dir; x >= 0 && x < max; x += dir {
 		if line[x] >= byte(r) {
 			return false
 		}
@@ -65,7 +65,7 @@ func visibleX(r rune, line string, start, max, dir int) bool {
 }
 
 func visibleY(r rune, lines []string, x int, start, max, dir int) bool {
-	for y := start+dir; y >= 0 && y < max; y += dir {
+	for y := start + dir; y >= 0 && y < max; y += dir {
 		if lines[y][x] >= byte(r) {
 			return false
 		}
@@ -75,7 +75,7 @@ func visibleY(r rune, lines []string, x int, start, max, dir int) bool {
 
 func distanceX(r rune, line string, start, max, dir int) int {
 	var dist int
-	for x := start+dir; x >= 0 && x < max; x += dir {
+	for x := start + dir; x >= 0 && x < max; x += dir {
 		dist++
 		if line[x] >= byte(r) {
 			break
@@ -86,7 +86,7 @@ func distanceX(r rune, line string, start, max, dir int) int {
 
 func distanceY(r rune, lines []string, x int, start, max, dir int) int {
 	var dist int
-	for y := start+dir; y >= 0 && y < max; y += dir {
+	for y := start + dir; y >= 0 && y < max; y += dir {
 		dist++
 		if lines[y][x] >= byte(r) {
 			break

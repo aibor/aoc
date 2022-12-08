@@ -24,7 +24,7 @@ func part1(input string) string {
 		}
 		amount, from, to = parseInst(line)
 		for i := 0; i < amount; i++ {
-			yard.move(from - 1, to - 1)
+			yard.move(from-1, to-1)
 		}
 	}
 
@@ -43,10 +43,10 @@ func part2(input string) string {
 		amount, from, to = parseInst(line)
 		crates = crates[:0]
 		for i := 0; i < amount; i++ {
-			crates = append(crates, yard[from - 1].pop())
+			crates = append(crates, yard[from-1].pop())
 		}
 		for i := len(crates) - 1; i >= 0; i-- {
-			yard[to - 1].push(crates[i])
+			yard[to-1].push(crates[i])
 		}
 	}
 
@@ -78,7 +78,7 @@ func newYard(input string) (stacks, []string) {
 	start := strings.SplitN(parts[0], "\n", 16)
 	yard := make(stacks, 0, 10)
 
-	for idx, r := range start[len(start) - 1] {
+	for idx, r := range start[len(start)-1] {
 		if r < '0' || r > '9' {
 			continue
 		}
@@ -121,7 +121,7 @@ func (s *stacks) move(from, to int) {
 
 type stack []rune
 
-func(s *stack) String() string {
+func (s *stack) String() string {
 	return fmt.Sprintf("% q", *s)
 }
 
@@ -133,7 +133,7 @@ func (s *stack) pop() rune {
 	if len(*s) < 1 {
 		return 0
 	}
-	r := (*s)[len(*s) - 1]
-	*s = append((*s)[:len(*s) -1])
+	r := (*s)[len(*s)-1]
+	*s = append((*s)[:len(*s)-1])
 	return r
 }

@@ -34,7 +34,7 @@ func part2(input string) string {
 	unused := 70000000 - sizes[l]
 
 	for d, size := range sizes {
-		if unused + size >= 30000000 && size < sizes[l] {
+		if unused+size >= 30000000 && size < sizes[l] {
 			l = d
 		}
 	}
@@ -44,7 +44,7 @@ func part2(input string) string {
 
 type stack []string
 
-func(s stack) String() string {
+func (s stack) String() string {
 	return strings.Join(s, "/")
 }
 
@@ -57,8 +57,8 @@ func (s *stack) pop() string {
 	if l < 1 {
 		return ""
 	}
-	e := (*s)[l - 1]
-	*s = append((*s)[:l -1])
+	e := (*s)[l-1]
+	*s = append((*s)[:l-1])
 	return e
 }
 
@@ -74,7 +74,7 @@ func getSizes(input []string) map[string]int {
 	var line string
 	var size int
 	dirstack := stack{}
-	sizes := make(map[string]int,64)
+	sizes := make(map[string]int, 64)
 
 	for _, line = range input {
 		switch {
@@ -84,7 +84,7 @@ func getSizes(input []string) map[string]int {
 			} else {
 				dirstack.push(line[5:])
 			}
-		case line[0]>= '0' && line[0]<='9':
+		case line[0] >= '0' && line[0] <= '9':
 			size, _ = strconv.Atoi(line[:strings.Index(line, " ")])
 			for l := len(dirstack); l > 0; l-- {
 				sizes[dirstack[:l].String()] += size
