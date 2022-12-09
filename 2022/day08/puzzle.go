@@ -17,17 +17,33 @@ var (
 func part1(input string) string {
 	var result int
 
-	lines := goutils.SplitInput(input)
-	rows := len(lines)
-	cols := len(lines[0])
-	// edge visible
-	result += rows*2 + (cols-2)*2
+	f := forest(goutils.SplitInput(input))
+	size := f.size()
 
-	for i, l := range lines[1 : rows-1] {
-		for j, r := range l[1 : cols-1] {
-			if visibleX(r, l, j+1, cols, -1) || visibleX(r, l, j+1, cols, 1) ||
-				visibleY(r, lines, j+1, i+1, rows, -1) || visibleY(r, lines, j+1, i+1, rows, 1) {
+	// keep top values seen for early exit when processing lower trees
+	var topy byte
+	topx := make([]byte, size)
+
+	// edge visible, no need to process
+	result += size*2 + (size-2)*2
+
+	for y, l := range f[1 : size-1] {
+		y := y + 1
+		topy = 0
+		for x := range l[1 : size-1] {
+			x := x + 1
+			t := f[y][x]
+			if t > topy && f.visible(x, y, -1, 0) ||
+				f.visible(x, y, 1, 0) ||
+				t > topx[x] && f.visible(x, y, 0, -1) ||
+				f.visible(x, y, 0, 1) {
 				result += 1
+			}
+			if t > topy {
+				topy = t
+			}
+			if t > topx[x] {
+				topx[x] = t
 			}
 		}
 	}
@@ -38,14 +54,19 @@ func part1(input string) string {
 func part2(input string) string {
 	var result, dist int
 
-	lines := goutils.SplitInput(input)
-	rows := len(lines)
-	cols := len(lines[0])
+	f := forest(goutils.SplitInput(input))
+	size := f.size()
+	// skip edge that is to close to the border to have a good view
+	edge := size / 10
 
-	for i, l := range lines {
-		for j, r := range l {
-			dist = distanceX(r, l, j, cols, -1) * distanceX(r, l, j, cols, 1) *
-				distanceY(r, lines, j, i, rows, -1) * distanceY(r, lines, j, i, rows, 1)
+	for y, l := range f[edge : size-edge] {
+		y := y + edge
+		for x := range l[edge : size-edge] {
+			x := x + edge
+			dist = f.distance(x, y, -1, 0) *
+				f.distance(x, y, 1, 0) *
+				f.distance(x, y, 0, -1) *
+				f.distance(x, y, 0, 1)
 			if dist > result {
 				result = dist
 			}
@@ -55,40 +76,28 @@ func part2(input string) string {
 	return strconv.Itoa(result)
 }
 
-func visibleX(r rune, line string, start, max, dir int) bool {
-	for x := start + dir; x >= 0 && x < max; x += dir {
-		if line[x] >= byte(r) {
+type forest []string
+
+func (f *forest) size() int {
+	return len(*f)
+}
+
+func (f *forest) visible(x, y, dirx, diry int) bool {
+	t := (*f)[y][x]
+	for x, y := x+dirx, y+diry; x >= 0 && x < f.size() && y >= 0 && y < f.size(); x, y = x+dirx, y+diry {
+		if (*f)[y][x] >= t {
 			return false
 		}
 	}
 	return true
 }
 
-func visibleY(r rune, lines []string, x int, start, max, dir int) bool {
-	for y := start + dir; y >= 0 && y < max; y += dir {
-		if lines[y][x] >= byte(r) {
-			return false
-		}
-	}
-	return true
-}
-
-func distanceX(r rune, line string, start, max, dir int) int {
+func (f *forest) distance(x, y, dirx, diry int) int {
 	var dist int
-	for x := start + dir; x >= 0 && x < max; x += dir {
+	t := (*f)[y][x]
+	for x, y := x+dirx, y+diry; x >= 0 && x < f.size() && y >= 0 && y < f.size(); x, y = x+dirx, y+diry {
 		dist++
-		if line[x] >= byte(r) {
-			break
-		}
-	}
-	return dist
-}
-
-func distanceY(r rune, lines []string, x int, start, max, dir int) int {
-	var dist int
-	for y := start + dir; y >= 0 && y < max; y += dir {
-		dist++
-		if lines[y][x] >= byte(r) {
+		if (*f)[y][x] >= t {
 			break
 		}
 	}
