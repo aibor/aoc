@@ -21,3 +21,6 @@ jobs:
 
     - name: Test Examples
       run: go test -v -run=Example ./...
+      
+    - name: Benchmarks
+      run: go test -bench=. -benchmem ./...
