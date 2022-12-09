@@ -1,10 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/aibor/aoc/goutils"
 )
 
 var (
@@ -17,79 +16,116 @@ var (
 
 func part1(input string) string {
 	var result int
-	sizes := getSizes(goutils.SplitInput(input))
+	dir := parse(input)
 
-	for _, size := range sizes {
-		if size <= 100000 {
-			result += size
+	dir.walk(func(d *Dir) {
+		if d.size <= 100000 {
+			result += d.size
 		}
-	}
+	})
 
 	return strconv.Itoa(result)
 }
 
 func part2(input string) string {
-	sizes := getSizes(goutils.SplitInput(input))
-	l := "/"
-	unused := 70000000 - sizes[l]
+	dir := parse(input)
+	unused := 70000000 - dir.size
 
-	for d, size := range sizes {
-		if unused+size >= 30000000 && size < sizes[l] {
-			l = d
+	dir.walk(func(d *Dir) {
+		if unused+d.size >= 30000000 && d.size < dir.size {
+			dir = d
 		}
+	})
+
+	return strconv.Itoa(dir.size)
+}
+
+type iterator struct {
+	fields []string
+}
+
+func newIterator(s string) *iterator {
+	return &iterator{strings.Fields(s)}
+}
+
+func (i *iterator) value() string {
+	return i.fields[0]
+}
+
+func (i *iterator) next() bool {
+	i.fields = i.fields[1:]
+	if len(i.fields) == 0 {
+		return false
 	}
-
-	return strconv.Itoa(sizes[l])
+	return true
 }
 
-type stack []string
-
-func (s stack) String() string {
-	return strings.Join(s, "/")
-}
-
-func (s *stack) push(e string) {
-	*s = append(*s, e)
-}
-
-func (s *stack) pop() string {
-	l := len(*s)
-	if l < 1 {
-		return ""
-	}
-	e := (*s)[l-1]
-	*s = append((*s)[:l-1])
-	return e
-}
-
-func (s *stack) last() string {
-	l := len(*s)
-	if l < 1 {
-		return ""
-	}
-	return (*s)[l-1]
-}
-
-func getSizes(input []string) map[string]int {
-	var line string
+func parse(input string) *Dir {
 	var size int
-	dirstack := stack{}
-	sizes := make(map[string]int, 64)
+	var dir *Dir
+	iter := newIterator(input)
 
-	for _, line = range input {
-		switch {
-		case strings.Contains(line, " cd "):
-			if line[5:] == ".." {
-				dirstack.pop()
+	for iter.next() {
+		if iter.value() == "cd" {
+			iter.next()
+			if iter.value() == ".." {
+				dir = dir.parent
 			} else {
-				dirstack.push(line[5:])
+				dir = dir.addSub(iter.value())
 			}
-		case line[0] >= '0' && line[0] <= '9':
-			size, _ = strconv.Atoi(line[:strings.Index(line, " ")])
-			for l := len(dirstack); l > 0; l-- {
-				sizes[dirstack[:l].String()] += size
-			}
+		} else if iter.value()[0] >= '0' && iter.value()[0] <= '9' {
+			size, _ = strconv.Atoi(iter.value())
+			dir.addSize(size)
+			// skip file name
+			iter.next()
 		}
 	}
-	return sizes
+	return dir.root()
+}
+
+type Dir struct {
+	size    int
+	name    string
+	parent  *Dir
+	subDirs []*Dir
+}
+
+func (d *Dir) addSub(name string) *Dir {
+	n := &Dir{
+		name:   name,
+		parent: d,
+	}
+	if d != nil {
+		d.subDirs = append(d.subDirs, n)
+	}
+	return n
+}
+
+func (d *Dir) print() {
+	var prefix string
+	d.walk(func(d *Dir) {
+		fmt.Println(d.name, d.size)
+		prefix += "-"
+	})
+}
+
+func (d *Dir) root() *Dir {
+	if d.parent == nil {
+		return d
+	}
+	return d.parent.root()
+}
+
+func (d *Dir) addSize(size int) {
+	d.size += size
+	if d.parent != nil {
+		d.parent.addSize(size)
+	}
+}
+
+func (d *Dir) walk(f func(*Dir)) {
+	f(d)
+	for _, c := range d.subDirs {
+		c.walk(f)
+	}
 }
