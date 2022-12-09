@@ -119,16 +119,13 @@ func (g *grid) move(dir string, num string) {
 			d := b.distance(c)
 			if d.x > 1 || d.x < -1 {
 				g.parts[i+1].x += d.x / 2
-				if d.y > 1 || d.y < -1 {
-					g.parts[i+1].y += d.y / 2
-				} else {
+				if d.y == 1 || d.y == -1 {
 					g.parts[i+1].y += d.y
 				}
-			} else if d.y > 1 || d.y < -1 {
+			}
+			if d.y > 1 || d.y < -1 {
 				g.parts[i+1].y += d.y / 2
-				if d.x > 1 || d.x < -1 {
-					g.parts[i+1].x += d.x / 2
-				} else {
+				if d.x == 1 || d.x == -1 {
 					g.parts[i+1].x += d.x
 				}
 			}
@@ -140,7 +137,7 @@ func (g *grid) move(dir string, num string) {
 func (g *grid) markVisited() {
 	p := g.parts[len(g.parts)-1]
 	if g.tailVisited[p.y] == nil {
-		g.tailVisited[p.y] = make([]bool, len(g.tailVisited))
+		g.tailVisited[p.y] = make([]bool, g.size)
 	}
 	if g.tailVisited[p.y][p.x] == false {
 		g.tailVisitedCount++
