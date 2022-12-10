@@ -14,14 +14,16 @@ var (
 	result2 = "2386"
 )
 
+const size = 1024
+
 func part1(input string) string {
-	g := newGrid(512, 2)
+	g := newGrid(size, 2)
 	g.process(input)
 	return strconv.Itoa(g.tailVisitedCount)
 }
 
 func part2(input string) string {
-	g := newGrid(512, 10)
+	g := newGrid(size, 10)
 	g.process(input)
 	return strconv.Itoa(g.tailVisitedCount)
 }
@@ -64,12 +66,12 @@ type grid struct {
 	tail             *pos
 }
 
-func newGrid(start int, length int) grid {
+func newGrid(size int, length int) grid {
 	g := grid{
-		size:        start * 2,
-		start:       pos{start, start},
+		size:        size,
+		start:       pos{size / 2, size / 2},
 		parts:       make([]pos, length),
-		tailVisited: make([][]bool, start*2),
+		tailVisited: make([][]bool, size),
 	}
 	for i := range g.parts {
 		g.parts[i] = g.start
