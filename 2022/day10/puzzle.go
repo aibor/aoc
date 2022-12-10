@@ -28,32 +28,28 @@ var (
 func part1(input string) string {
 	var result int
 
-	c := cpu{x: 1}
-	c.eachTick = func() {
-		switch c.cycle {
+	s := makeScreen()
+	s.cpu.eachTick = func() {
+		switch s.cpu.cycle {
 		case 20, 60, 100, 140, 180, 220:
-			result += c.cycle * c.x
+			result += s.signalStrength()
 		}
 	}
-	c.process(input)
+	s.process(input)
 
 	return strconv.Itoa(result)
 }
 
 func part2(input string) string {
-	s := screen{
-		width: 40,
-		rows:  6,
-		cpu:   cpu{x: 1},
-	}
+	s := makeScreen()
 	s.cpu.eachTick = func() {
-		char := '.'
+		char := byte('.')
 		if s.drawing() {
-			char = '#'
+			char = byte('#')
 		}
-		s.draw(byte(char))
+		s.draw(char)
 	}
-	s.cpu.process(input)
+	s.process(input)
 
 	return "\n" + s.String()
 }
@@ -72,16 +68,16 @@ func (i *instIterator) value() string {
 	return (*i)[0]
 }
 
-func (c *cpu) process(input string) {
+func (s *screen) process(input string) {
 	i := instIterator(strings.Fields(input))
 	for len(i) > 0 {
 		switch i.value() {
 		case "noop":
-			c.tick()
+			s.cpu.tick()
 		case "addx":
 			i.next()
 			x, _ := strconv.Atoi(i.value())
-			c.addx(x)
+			s.cpu.addx(x)
 		}
 		if !i.next() {
 			break
@@ -115,38 +111,56 @@ type screen struct {
 	cpu   cpu
 }
 
-func (s *screen) sprite() int {
+func makeScreen() screen {
+	s := screen{
+		width: 40,
+		rows:  6,
+		cpu:   cpu{x: 1},
+	}
+	s.state = make([]byte, s.width*s.rows)
+	return s
+}
+
+func (s *screen) signalStrength() int {
+	return s.cpu.cycle * s.cpu.x
+}
+
+func (s *screen) spritePos() int {
 	return s.cpu.x
 }
 
-func (s *screen) index() int {
+func (s *screen) stateIndex() int {
+	if s.cpu.cycle == 0 {
+		return 0
+	}
 	return s.cpu.cycle - 1
 }
 
-func (s *screen) pixel() int {
-	return s.index() % s.width
+func (s *screen) pixelPos() int {
+	return s.stateIndex() % s.width
 }
 
-func (s *screen) row() int {
-	return s.index() / s.width
+func (s *screen) currentRow() int {
+	return s.stateIndex() / s.width
 }
 
 func (s *screen) drawing() bool {
-	diff := s.sprite() - s.pixel()
+	diff := s.spritePos() - s.pixelPos()
 	return diff >= -1 && diff <= 1
 }
 
 func (s *screen) draw(char byte) {
-	if s.state == nil {
-		s.state = make([]byte, s.width*s.rows)
-	}
-	s.state[s.index()] = char
+	s.state[s.stateIndex()] = char
 }
 
 func (s *screen) String() string {
-	out := make([]string, s.rows)
-	for i := 0; len(s.state) > i*s.width && i < s.rows; i++ {
-		out[i] = string(s.state[i*s.width : (i+1)*s.width])
+	var b strings.Builder
+	b.Grow((s.width + 1) * s.rows)
+	for i := 0; i < s.rows; i++ {
+		if i > 0 {
+			b.WriteString("\n")
+		}
+		b.Write(s.state[i*s.width : (i+1)*s.width])
 	}
-	return strings.Join(out, "\n")
+	return b.String()
 }
