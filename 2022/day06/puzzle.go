@@ -40,7 +40,7 @@ func part2(input string) string {
 func findMarker(message string, length int) int {
 	var idx int
 	for i := length; i < len(message); i += idx + 1 {
-		idx = firstNonUniqueIndex(message[i-length:i], length)
+		idx = lastFirstNonUniqueIndex(message[i-length : i])
 		if idx == length {
 			return i
 		}
@@ -48,12 +48,12 @@ func findMarker(message string, length int) int {
 	return 0
 }
 
-func firstNonUniqueIndex(chunk string, length int) int {
-	l := len(chunk)
-	for idx, r := range chunk[:l-1] {
-		if strings.LastIndexByte(chunk, byte(r)) != idx {
-			return idx
+func lastFirstNonUniqueIndex(chunk string) int {
+	length := len(chunk)
+	for i := length - 1; i > 0; i-- {
+		if j := strings.IndexByte(chunk, chunk[i]); j != i {
+			return j
 		}
 	}
-	return l
+	return length
 }
