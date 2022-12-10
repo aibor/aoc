@@ -1,0 +1,8 @@
+goos: linux
+goarch: amd64
+pkg: github.com/aibor/aoc/2022/day09
+cpu: AMD Ryzen 5 5600G with Radeon Graphics
+BenchmarkPart1-12    	    7032	    167889 ns/op	  368677 B/op	     276 allocs/op
+BenchmarkPart2-12    	    3638	    329633 ns/op	  356517 B/op	     264 allocs/op
+PASS
+ok  	github.com/aibor/aoc/2022/day09	2.434s
