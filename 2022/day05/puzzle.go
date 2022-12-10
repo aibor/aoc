@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -16,40 +15,27 @@ var (
 
 func part1(input string) string {
 	yard, movements := newYard(input)
-
-	var amount, from, to int
 	for _, line := range movements {
 		if line == "" {
 			continue
 		}
-		amount, from, to = parseInst(line)
+		amount, from, to := parseInst(line)
 		for i := 0; i < amount; i++ {
-			yard.move(from-1, to-1)
+			yard.move(from-1, to-1, 1)
 		}
 	}
-
 	return yard.top()
 }
 
 func part2(input string) string {
 	yard, movements := newYard(input)
-
-	var amount, from, to int
-	crates := make([]rune, 0, 64)
 	for _, line := range movements {
 		if line == "" {
 			continue
 		}
-		amount, from, to = parseInst(line)
-		crates = crates[:0]
-		for i := 0; i < amount; i++ {
-			crates = append(crates, yard[from-1].pop())
-		}
-		for i := len(crates) - 1; i >= 0; i-- {
-			yard[to-1].push(crates[i])
-		}
+		amount, from, to := parseInst(line)
+		yard.move(from-1, to-1, amount)
 	}
-
 	return yard.top()
 }
 
@@ -71,58 +57,70 @@ func parseInst(inst string) (amount, from, to int) {
 	return
 }
 
-type stacks []*stack
+type crateYard [10]stack
 
-func newYard(input string) (stacks, []string) {
+func newYard(input string) (crateYard, []string) {
 	parts := strings.SplitN(input, "\n\n", 2)
 	start := strings.SplitN(parts[0], "\n", 16)
-	yard := make(stacks, 0, 10)
-
+	yard := crateYard{}
+	s := 0
 	for idx, r := range start[len(start)-1] {
 		if r < '0' || r > '9' {
 			continue
 		}
-		s := yard.add()
+		yard.reset(s)
 		for i := len(start) - 2; i >= 0; i-- {
 			if len(start[i]) < idx {
 				continue
 			}
 			crate := rune(start[i][idx])
 			if crate >= 'A' {
-				s.push(crate)
+				yard[s] = append(yard[s], crate)
 			}
 		}
+		s++
 	}
 
 	return yard, strings.SplitN(parts[1], "\n", 512)
 }
 
-func (s *stacks) top() string {
-	var t string
-	for _, stack := range *s {
-		crate := stack.pop()
+func (y *crateYard) top() string {
+	var b strings.Builder
+	b.Grow(len(y))
+	for _, stack := range y {
+		crate, _ := stack.top()
 		if crate != 0 {
-			t += string(crate)
+			b.WriteRune(crate)
 		}
 	}
-	return t
+	return b.String()
 }
 
-func (s *stacks) add() *stack {
-	e := make(stack, 0, 64)
-	*s = append(*s, &e)
-	return &e
+func (y *crateYard) move(from, to, n int) {
+	if n == 1 {
+		y[to].push(y[from].pop())
+		return
+	}
+	l := len(y[from])
+	if l < n {
+		n = l
+	}
+	y[to] = append(y[to], y[from][l-n:]...)
+	y[from] = y[from][:l-n]
 }
 
-func (s *stacks) move(from, to int) {
-	crate := (*s)[from].pop()
-	(*s)[to].push(crate)
+func (y *crateYard) reset(s int) {
+	y[s] = make(stack, 0, 64)
 }
 
 type stack []rune
 
-func (s *stack) String() string {
-	return fmt.Sprintf("% q", *s)
+func (s stack) top() (rune, int) {
+	h := len(s) - 1
+	if h < 0 {
+		return 0, 0
+	}
+	return s[h], h
 }
 
 func (s *stack) push(r rune) {
@@ -130,10 +128,7 @@ func (s *stack) push(r rune) {
 }
 
 func (s *stack) pop() rune {
-	if len(*s) < 1 {
-		return 0
-	}
-	r := (*s)[len(*s)-1]
-	*s = append((*s)[:len(*s)-1])
+	r, h := s.top()
+	*s = (*s)[:h]
 	return r
 }
