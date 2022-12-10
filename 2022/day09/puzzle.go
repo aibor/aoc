@@ -39,81 +39,90 @@ func (p *pos) distance(q pos) pos {
 	return pos{p.x - q.x, p.y - q.y}
 }
 
+func (p *pos) move(d pos) {
+	switch d.x {
+	case 2, -2:
+		p.x += d.x / 2
+	case 1, -1:
+		p.x += d.x
+	}
+	switch d.y {
+	case 2, -2:
+		p.y += d.y / 2
+	case 1, -1:
+		p.y += d.y
+	}
+}
+
 type grid struct {
 	size             int
 	start            pos
 	parts            []pos
 	tailVisited      [][]bool
 	tailVisitedCount int
+	head             *pos
+	tail             *pos
 }
 
 func newGrid(start int, length int) grid {
 	g := grid{
 		size:        start * 2,
 		start:       pos{start, start},
-		parts:       make([]pos, length, 16),
+		parts:       make([]pos, length),
 		tailVisited: make([][]bool, start*2),
 	}
 	for i := range g.parts {
 		g.parts[i] = g.start
 	}
-	g.markVisited(g.parts[0])
+	g.head = &g.parts[0]
+	g.tail = &g.parts[length-1]
+	g.markVisited()
 	return g
 }
 
 func (g *grid) process(input string) {
 	insts := strings.Fields(input)
 	for len(insts) > 0 {
-		g.move(insts[0], insts[1])
+		n, _ := strconv.Atoi(insts[1])
+		g.move(insts[0][0], n)
 		insts = insts[2:]
 	}
 }
 
-func (g *grid) move(dir string, num string) {
-	for n, _ := strconv.Atoi(num); n > 0; n-- {
-		head := &g.parts[0]
-		switch dir[0] {
+func (g *grid) move(dir byte, num int) {
+	for ; num > 0; num-- {
+		switch dir {
 		case 'L':
-			head.x--
+			g.head.x--
 		case 'R':
-			head.x++
+			g.head.x++
 		case 'U':
-			head.y--
+			g.head.y--
 		case 'D':
-			head.y++
+			g.head.y++
 		}
-		for i, c := range g.parts[1:] {
-			p := &g.parts[i+1]
-			d := g.parts[i].distance(c)
-			if d.x <= 1 && d.x >= -1 && d.y <= 1 && d.y >= -1 {
-				continue
-			}
-			switch d.x {
-			case 2, -2:
-				p.x += d.x / 2
-			case 1, -1:
-				p.x += d.x
-			}
-			switch d.y {
-			case 2, -2:
-				p.y += d.y / 2
-			case 1, -1:
-				p.y += d.y
-			}
-			if i == len(g.parts)-2 {
-				g.markVisited(*p)
-			}
-		}
+		g.moveParts()
 	}
 }
 
-func (g *grid) markVisited(p pos) {
-	if g.tailVisited[p.y] == nil {
-		g.tailVisited[p.y] = make([]bool, g.size, g.size)
+func (g *grid) moveParts() {
+	for i, c := range g.parts[1:] {
+		d := g.parts[i].distance(c)
+		if d.x <= 1 && d.x >= -1 && d.y <= 1 && d.y >= -1 {
+			return
+		}
+		g.parts[i+1].move(d)
 	}
-	if g.tailVisited[p.y][p.x] == false {
+	g.markVisited()
+}
+
+func (g *grid) markVisited() {
+	if g.tailVisited[g.tail.y] == nil {
+		g.tailVisited[g.tail.y] = make([]bool, g.size, g.size)
+	}
+	if g.tailVisited[g.tail.y][g.tail.x] == false {
 		g.tailVisitedCount++
-		g.tailVisited[p.y][p.x] = true
+		g.tailVisited[g.tail.y][g.tail.x] = true
 	}
 }
 
