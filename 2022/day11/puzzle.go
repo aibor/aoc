@@ -15,6 +15,8 @@ var (
 	result2 = "35270398814"
 )
 
+const itemsSize = 64
+
 func part1(input string) string {
 	monkeys := parseMonkeys(input)
 	worryDecrease := func(i *int) {
@@ -43,21 +45,20 @@ func parseMonkeys(input string) monkeys {
 	var all monkeys
 
 	iter := stringIterator(strings.Fields(input))
-mainLoop:
 	for {
 		switch iter.value() {
 		case "Monkey":
-			curMonkey = &monkey{items: make(queue, 0, 16)}
+			curMonkey = &monkey{}
+			curMonkey.resetItems()
 			all = append(all, curMonkey)
 		case "Starting":
-			iter.next() // "items:"
 			for iter.next() {
-				n, err := strconv.Atoi(strings.Replace(iter.value(), ",", "", 1))
+				// Peek only to not consume the breaking token so oit will be processed in the main loop porperly as well.
+				n, err := strconv.Atoi(strings.Replace(iter.peek(), ",", "", 1))
 				if err != nil {
-					// Continue with main loop to process this token as well.
-					continue mainLoop
+					break
 				}
-				curMonkey.items.push(n)
+				curMonkey.addItem(n)
 			}
 		case "Operation:":
 			iter.skip(4)
@@ -130,31 +131,24 @@ func (i *stringIterator) peek() string {
 	return ""
 }
 
-type queue []int
-
-func (q *queue) push(i int) {
-	(*q) = append(*q, i)
-}
-
-func (q *queue) empty() bool {
-	return len(*q) == 0
-}
-
-func (q *queue) pop() int {
-	i := (*q)[0]
-	*q = (*q)[1:]
-	return i
-}
-
 type worryOp func(*int)
 
 type monkey struct {
-	items       queue
+	i           [itemsSize]int
+	items       []int
 	inspected   int
 	inspect     worryOp
 	testDivisor int
 	targetTrue  int
 	targetFalse int
+}
+
+func (m *monkey) addItem(i int) {
+	m.items = append(m.items, i)
+}
+
+func (m *monkey) resetItems() {
+	m.items = m.i[:0]
 }
 
 func (m *monkey) String() string {
@@ -166,17 +160,17 @@ type monkeys []*monkey
 
 func (all *monkeys) playRound(w worryOp) {
 	for _, m := range *all {
-		for !m.items.empty() {
-			i := m.items.pop()
+		for _, i := range m.items {
 			m.inspect(&i)
 			m.inspected++
 			w(&i)
 			if i%m.testDivisor == 0 {
-				(*all)[m.targetTrue].items.push(i)
+				(*all)[m.targetTrue].addItem(i)
 			} else {
-				(*all)[m.targetFalse].items.push(i)
+				(*all)[m.targetFalse].addItem(i)
 			}
 		}
+		m.resetItems()
 	}
 }
 
