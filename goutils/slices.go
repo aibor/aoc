@@ -4,7 +4,7 @@ type Iterator[T any] struct {
 	fields   []T
 	length   int
 	position int
-	moved    bool
+	called   bool
 }
 
 func NewIterator[T any](s []T) Iterator[T] {
@@ -32,18 +32,20 @@ func (i *Iterator[T]) Position() int {
 
 func (i *Iterator[T]) Reset() {
 	i.position = 0
-	i.moved = false
+	i.called = false
 }
 
 func (i *Iterator[T]) Next() bool {
 	if i.position >= i.length-1 {
 		return false
 	}
-	if !i.moved {
-		i.moved = true
-	} else {
-		i.position++
+	if !i.called {
+		i.called = true
+		if i.position == 0 {
+			return true
+		}
 	}
+	i.position++
 	return true
 }
 
@@ -68,6 +70,9 @@ func (i *Iterator[T]) Skip(n int) bool {
 }
 
 func (i *Iterator[T]) Value() T {
+	if !i.called {
+		i.called = true
+	}
 	return i.fields[i.position]
 }
 
