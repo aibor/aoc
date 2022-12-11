@@ -19,8 +19,8 @@ const itemsSize = 64
 
 func part1(input string) string {
 	monkeys := parseMonkeys(input)
-	worryDecrease := func(i *int) {
-		*i /= 3
+	worryDecrease := func(i int) int {
+		return i / 3
 	}
 	for i := 1; i <= 20; i++ {
 		monkeys.playRound(worryDecrease)
@@ -31,8 +31,8 @@ func part1(input string) string {
 func part2(input string) string {
 	monkeys := parseMonkeys(input)
 	n := monkeys.divisor()
-	worryDecrease := func(i *int) {
-		*i %= n
+	worryDecrease := func(i int) int {
+		return i % n
 	}
 	for i := 1; i <= 10000; i++ {
 		monkeys.playRound(worryDecrease)
@@ -42,7 +42,7 @@ func part2(input string) string {
 
 func parseMonkeys(input string) monkeys {
 	var curMonkey *monkey
-	var all monkeys
+	all := make(monkeys, 0, 16)
 
 	iter := stringIterator(strings.Fields(input))
 	for {
@@ -64,31 +64,28 @@ func parseMonkeys(input string) monkeys {
 			iter.skip(4)
 			operator := iter.value()
 			iter.next()
-			if n, err := strconv.Atoi(iter.value()); err == nil {
+			if n, err := iter.num(); err == nil {
 				switch operator {
 				case "*":
-					curMonkey.inspect = func(i *int) { *i *= n }
+					curMonkey.inspect = func(i int) int { return i * n }
 				case "+":
-					curMonkey.inspect = func(i *int) { *i += n }
+					curMonkey.inspect = func(i int) int { return i + n }
 				}
 			} else {
 				switch operator {
 				case "*":
-					curMonkey.inspect = func(i *int) { *i *= *i }
+					curMonkey.inspect = func(i int) int { return i * i }
 				case "+":
-					curMonkey.inspect = func(i *int) { *i += *i }
+					curMonkey.inspect = func(i int) int { return i * 2 }
 				}
 			}
 		case "Test:":
 			iter.skip(3)
-			n, _ := strconv.Atoi(iter.value())
-			curMonkey.testDivisor = n
+			curMonkey.testDivisor = iter.mustNum()
 			iter.skip(6)
-			n, _ = strconv.Atoi(iter.value())
-			curMonkey.targetTrue = n
+			curMonkey.targetTrue = iter.mustNum()
 			iter.skip(6)
-			n, _ = strconv.Atoi(iter.value())
-			curMonkey.targetFalse = n
+			curMonkey.targetFalse = iter.mustNum()
 		}
 
 		if !iter.next() {
@@ -124,6 +121,18 @@ func (i *stringIterator) value() string {
 	return ""
 }
 
+func (i *stringIterator) num() (int, error) {
+	return strconv.Atoi(i.value())
+}
+
+func (i *stringIterator) mustNum() int {
+	n, err := i.num()
+	if err != nil {
+		panic("must parse Atoi")
+	}
+	return n
+}
+
 func (i *stringIterator) peek() string {
 	if len(*i) > 1 {
 		return (*i)[1]
@@ -131,10 +140,9 @@ func (i *stringIterator) peek() string {
 	return ""
 }
 
-type worryOp func(*int)
+type worryOp func(int) int
 
 type monkey struct {
-	i           [itemsSize]int
 	items       []int
 	inspected   int
 	inspect     worryOp
@@ -148,7 +156,11 @@ func (m *monkey) addItem(i int) {
 }
 
 func (m *monkey) resetItems() {
-	m.items = m.i[:0]
+	if m.items == nil {
+		m.items = make([]int, 0, itemsSize)
+	} else {
+		m.items = m.items[:0]
+	}
 }
 
 func (m *monkey) String() string {
@@ -161,9 +173,8 @@ type monkeys []*monkey
 func (all *monkeys) playRound(w worryOp) {
 	for _, m := range *all {
 		for _, i := range m.items {
-			m.inspect(&i)
+			i = w(m.inspect(i))
 			m.inspected++
-			w(&i)
 			if i%m.testDivisor == 0 {
 				(*all)[m.targetTrue].addItem(i)
 			} else {
