@@ -68,7 +68,7 @@ func parseMonkeys(input string) monkeys {
 			iter.Skip(4)
 			operator := iter.Value()
 			iter.Next()
-			if n, err := strconv.Atoi(iter.Value()); err == nil {
+			if n, err := iter.Int(); err == nil {
 				switch operator {
 				case "*":
 					curMonkey.inspect = func(i int) int { return i * n }
@@ -85,11 +85,11 @@ func parseMonkeys(input string) monkeys {
 			}
 		case "Test:":
 			iter.Skip(3)
-			curMonkey.testDivisor = goutils.MustBeInt(iter.Value())
+			curMonkey.testDivisor = iter.MustBeInt()
 			iter.Skip(6)
-			curMonkey.targetTrue = goutils.MustBeInt(iter.Value())
+			curMonkey.targetTrue = iter.MustBeInt()
 			iter.Skip(6)
-			curMonkey.targetFalse = goutils.MustBeInt(iter.Value())
+			curMonkey.targetFalse = iter.MustBeInt()
 		}
 	}
 
