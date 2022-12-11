@@ -3,6 +3,8 @@ package main
 import (
 	"strconv"
 	"strings"
+
+	"github.com/aibor/aoc/goutils"
 )
 
 var (
@@ -54,33 +56,15 @@ func part2(input string) string {
 	return "\n" + s.String()
 }
 
-type instIterator []string
-
-func (i *instIterator) next() bool {
-	if len(*i) > 0 {
-		*i = (*i)[1:]
-		return true
-	}
-	return false
-}
-
-func (i *instIterator) value() string {
-	return (*i)[0]
-}
-
 func (s *screen) process(input string) {
-	i := instIterator(strings.Fields(input))
-	for len(i) > 0 {
-		switch i.value() {
+	i := goutils.NewStringFieldsIterator(input)
+	for i.Next() {
+		switch i.Value() {
 		case "noop":
 			s.cpu.tick()
 		case "addx":
-			i.next()
-			x, _ := strconv.Atoi(i.value())
-			s.cpu.addx(x)
-		}
-		if !i.next() {
-			break
+			i.Next()
+			s.cpu.addx(goutils.MustBeInt(i.Value()))
 		}
 	}
 }

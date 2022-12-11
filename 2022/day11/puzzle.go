@@ -5,6 +5,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/aibor/aoc/goutils"
 )
 
 var (
@@ -44,27 +46,29 @@ func parseMonkeys(input string) monkeys {
 	var curMonkey *monkey
 	all := make(monkeys, 0, 16)
 
-	iter := stringIterator(strings.Fields(input))
-	for {
-		switch iter.value() {
+	iter := goutils.NewStringFieldsIterator(input)
+	for iter.Next() {
+		switch iter.Value() {
 		case "Monkey":
 			curMonkey = &monkey{}
 			curMonkey.resetItems()
 			all = append(all, curMonkey)
 		case "Starting":
-			for iter.next() {
-				// Peek only to not consume the breaking token so oit will be processed in the main loop porperly as well.
-				n, err := strconv.Atoi(strings.Replace(iter.peek(), ",", "", 1))
+			iter.Next() // "items:"
+			for iter.Next() {
+				n, err := strconv.Atoi(strings.Replace(iter.Value(), ",", "", 1))
 				if err != nil {
+					// Roll back so the non integer token will be processed in the main loop porperly as well.
+					iter.Prev()
 					break
 				}
 				curMonkey.addItem(n)
 			}
 		case "Operation:":
-			iter.skip(4)
-			operator := iter.value()
-			iter.next()
-			if n, err := iter.num(); err == nil {
+			iter.Skip(4)
+			operator := iter.Value()
+			iter.Next()
+			if n, err := strconv.Atoi(iter.Value()); err == nil {
 				switch operator {
 				case "*":
 					curMonkey.inspect = func(i int) int { return i * n }
@@ -80,64 +84,16 @@ func parseMonkeys(input string) monkeys {
 				}
 			}
 		case "Test:":
-			iter.skip(3)
-			curMonkey.testDivisor = iter.mustNum()
-			iter.skip(6)
-			curMonkey.targetTrue = iter.mustNum()
-			iter.skip(6)
-			curMonkey.targetFalse = iter.mustNum()
-		}
-
-		if !iter.next() {
-			break
+			iter.Skip(3)
+			curMonkey.testDivisor = goutils.MustBeInt(iter.Value())
+			iter.Skip(6)
+			curMonkey.targetTrue = goutils.MustBeInt(iter.Value())
+			iter.Skip(6)
+			curMonkey.targetFalse = goutils.MustBeInt(iter.Value())
 		}
 	}
 
 	return all
-}
-
-type stringIterator []string
-
-func (i *stringIterator) next() bool {
-	if len(*i) > 0 {
-		*i = (*i)[1:]
-		return true
-	}
-	return false
-}
-
-func (i *stringIterator) skip(n int) {
-	l := len(*i)
-	if l < n {
-		n = l
-	}
-	*i = (*i)[n:]
-}
-
-func (i *stringIterator) value() string {
-	if len(*i) > 0 {
-		return (*i)[0]
-	}
-	return ""
-}
-
-func (i *stringIterator) num() (int, error) {
-	return strconv.Atoi(i.value())
-}
-
-func (i *stringIterator) mustNum() int {
-	n, err := i.num()
-	if err != nil {
-		panic("must parse Atoi")
-	}
-	return n
-}
-
-func (i *stringIterator) peek() string {
-	if len(*i) > 1 {
-		return (*i)[1]
-	}
-	return ""
 }
 
 type worryOp func(int) int

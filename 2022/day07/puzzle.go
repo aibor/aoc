@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"strings"
+
+	"github.com/aibor/aoc/goutils"
 )
 
 var (
@@ -40,44 +41,22 @@ func part2(input string) string {
 	return strconv.Itoa(dir.size)
 }
 
-type iterator struct {
-	fields []string
-}
-
-func newIterator(s string) *iterator {
-	return &iterator{strings.Fields(s)}
-}
-
-func (i *iterator) value() string {
-	return i.fields[0]
-}
-
-func (i *iterator) next() bool {
-	i.fields = i.fields[1:]
-	if len(i.fields) == 0 {
-		return false
-	}
-	return true
-}
-
 func parse(input string) *Dir {
-	var size int
 	var dir *Dir
-	iter := newIterator(input)
+	iter := goutils.NewStringFieldsIterator(input)
 
-	for iter.next() {
-		if iter.value() == "cd" {
-			iter.next()
-			if iter.value() == ".." {
+	for iter.Next() {
+		if iter.Value() == "cd" {
+			iter.Next()
+			if iter.Value() == ".." {
 				dir = dir.parent
 			} else {
-				dir = dir.addSub(iter.value())
+				dir = dir.addSub(iter.Value())
 			}
-		} else if iter.value()[0] >= '0' && iter.value()[0] <= '9' {
-			size, _ = strconv.Atoi(iter.value())
-			dir.addSize(size)
+		} else if iter.Value()[0] >= '0' && iter.Value()[0] <= '9' {
+			dir.addSize(goutils.MustBeInt(iter.Value()))
 			// skip file name
-			iter.next()
+			iter.Next()
 		}
 	}
 	return dir.root()

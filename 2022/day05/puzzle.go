@@ -3,6 +3,8 @@ package main
 import (
 	"strconv"
 	"strings"
+
+	"github.com/aibor/aoc/goutils"
 )
 
 var (
@@ -57,7 +59,9 @@ func parseInst(inst string) (amount, from, to int) {
 	return
 }
 
-type crateYard [10]stack
+type crateStack = goutils.Stack[rune]
+
+type crateYard [10]crateStack
 
 func newYard(input string) (crateYard, []string) {
 	parts := strings.SplitN(input, "\n\n", 2)
@@ -88,7 +92,7 @@ func (y *crateYard) top() string {
 	var b strings.Builder
 	b.Grow(len(y))
 	for _, stack := range y {
-		crate, _ := stack.top()
+		crate, _ := stack.Top()
 		if crate != 0 {
 			b.WriteRune(crate)
 		}
@@ -98,7 +102,7 @@ func (y *crateYard) top() string {
 
 func (y *crateYard) move(from, to, n int) {
 	if n == 1 {
-		y[to].push(y[from].pop())
+		y[to].Push(y[from].Pop())
 		return
 	}
 	l := len(y[from])
@@ -110,25 +114,5 @@ func (y *crateYard) move(from, to, n int) {
 }
 
 func (y *crateYard) reset(s int) {
-	y[s] = make(stack, 0, 64)
-}
-
-type stack []rune
-
-func (s stack) top() (rune, int) {
-	h := len(s) - 1
-	if h < 0 {
-		return 0, 0
-	}
-	return s[h], h
-}
-
-func (s *stack) push(r rune) {
-	*s = append(*s, r)
-}
-
-func (s *stack) pop() rune {
-	r, h := s.top()
-	*s = (*s)[:h]
-	return r
+	y[s] = make(crateStack, 0, 64)
 }

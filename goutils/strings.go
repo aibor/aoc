@@ -3,6 +3,7 @@ package goutils
 import (
 	"bufio"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -19,4 +20,16 @@ func ReadInput() (input []string, err error) {
 
 func SplitInput(input string) []string {
 	return strings.Split(strings.TrimSpace(input), "\n")
+}
+
+func NewStringFieldsIterator(s string) Iterator[string] {
+	return NewIterator(strings.Fields(s))
+}
+
+func MustBeInt(s string) int {
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		panic("must parse Atoi")
+	}
+	return n
 }
