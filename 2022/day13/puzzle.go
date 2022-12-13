@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	_ "fmt"
 	"sort"
 	"strconv"
 
@@ -18,52 +17,41 @@ var (
 )
 
 func part1(input string) string {
-	var result int
+	var pair, result int
+	var left, right []any
 
-	pair := 1
-	lines := goutils.SplitInput(input)
-	lines = append(lines, "")
+	lines := append(goutils.SplitInput(input), "")
 	for len(lines) > 0 {
-		var left, right []any
+		pair++
 		json.Unmarshal([]byte(lines[0]), &left)
 		json.Unmarshal([]byte(lines[1]), &right)
-		e := compare(left, right)
-		if e == -1 {
+		lines = lines[3:]
+		if compare(left, right) == -1 {
 			result += pair
 		}
-
-		lines = lines[3:]
-		pair++
 	}
 
 	return strconv.Itoa(result)
 }
 
 func part2(input string) string {
-	var result int = 1
+	var result int
 
 	lines := goutils.SplitInput(input)
-	packets := append(
-		make(Packets, 0, len(lines)),
-		Packet{[]any{[]any{2.0}}, true},
-		Packet{[]any{[]any{6.0}}, true},
-	)
+	dividerPackets := []*Packet{
+		{[]any{[]any{2.0}}, 0},
+		{[]any{[]any{6.0}}, 0},
+	}
+	packets := append(make(Packets, 0, len(lines)), dividerPackets...)
 	for _, line := range lines {
-		if line == "" {
-			continue
+		if line != "" {
+			var p Packet
+			json.Unmarshal([]byte(line), &p.data)
+			packets = append(packets, &p)
 		}
-		var p Packet
-		json.Unmarshal([]byte(line), &p.data)
-		packets = append(packets, p)
 	}
-
 	sort.Sort(packets)
-
-	for i, p := range packets {
-		if p.divider {
-			result *= i + 1
-		}
-	}
+	result = (dividerPackets[0].index + 1) * (dividerPackets[1].index + 1)
 
 	return strconv.Itoa(result)
 }
@@ -75,24 +63,24 @@ func compare(left, right []any) int {
 		}
 		l, r := left[0], right[0]
 		left, right = left[1:], right[1:]
-		lInt, lIntOk := l.(float64)
-		rInt, rIntOk := r.(float64)
-		ls, _ := l.([]any)
-		rs, _ := r.([]any)
+		lNum, lNumOk := l.(float64)
+		rNum, rNumOk := r.(float64)
 		switch {
-		case lIntOk && rIntOk:
+		case lNumOk && rNumOk:
 			switch {
-			case lInt < rInt:
+			case lNum == rNum:
+				continue
+			case lNum < rNum:
 				return -1
-			case lInt > rInt:
+			case lNum > rNum:
 				return 1
 			}
-		case lIntOk:
-			ls = []any{lInt}
-		case rIntOk:
-			rs = []any{rInt}
+		case lNumOk:
+			l = []any{lNum}
+		case rNumOk:
+			r = []any{rNum}
 		}
-		if o := compare(ls, rs); o != 0 {
+		if o := compare(l.([]any), r.([]any)); o != 0 {
 			return o
 		}
 
@@ -104,12 +92,16 @@ func compare(left, right []any) int {
 }
 
 type Packet struct {
-	data    []any
-	divider bool
+	data  []any
+	index int
 }
 
-type Packets []Packet
+type Packets []*Packet
 
 func (p Packets) Len() int           { return len(p) }
-func (p Packets) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 func (p Packets) Less(i, j int) bool { return compare(p[i].data, p[j].data) == -1 }
+func (p Packets) Swap(i, j int) {
+	p[i], p[j] = p[j], p[i]
+	p[i].index = i
+	p[j].index = j
+}
