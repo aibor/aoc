@@ -16,13 +16,6 @@ var (
 	result2 = "11600823139120"
 )
 
-const (
-	Free = iota
-	NoBeacon
-	Sensor
-	Beacon
-)
-
 func part1(input string) string {
 	var result int
 
@@ -54,6 +47,11 @@ type pos struct {
 	x, y int
 }
 
+func (p *pos) move(x, y int) {
+	p.x += x
+	p.y += y
+}
+
 func (p pos) manhattanDist(q pos) int {
 	return int(math.Abs(float64(p.x-q.x)) + math.Abs(float64(p.y-q.y)))
 }
@@ -78,14 +76,10 @@ func (m *Map) noBeaconCount(y int) int {
 	var i int
 	for x := m.minx; x <= m.maxx; x++ {
 		p := pos{x, y}
-		for _, s := range m.sensors {
-			if p == s.beacon {
-				break
-			}
-			if p == s.pos || s.manhattanDist(p) <= s.dist {
-				i++
-				break
-			}
+		s := m.checkPos(p)
+		if s != nil && s.beacon != p {
+			i++
+			continue
 		}
 	}
 	return i
@@ -98,44 +92,43 @@ func (m *Map) noBeaconPos(min, max int) pos {
 			return p.x >= min && p.x <= max && p.y >= min && p.y <= max
 		}
 		for validPos(p) && p.y < s.y {
-			if m.checkNoBeacon(p) {
+			if m.checkPos(p) == nil {
 				return p
 			}
-			p.x++
-			p.y++
+			p.move(1, 1)
 		}
 		for validPos(p) && p.x > s.x {
-			if m.checkNoBeacon(p) {
+			if m.checkPos(p) == nil {
 				return p
 			}
-			p.x--
-			p.y++
+			p.move(-1, 1)
 		}
 		for validPos(p) && p.y > s.y {
-			if m.checkNoBeacon(p) {
+			if m.checkPos(p) == nil {
 				return p
 			}
-			p.x--
-			p.y--
+			p.move(-1, -1)
 		}
 		for validPos(p) && p.x < s.x {
-			if m.checkNoBeacon(p) {
+			if m.checkPos(p) == nil {
 				return p
 			}
-			p.x++
-			p.y--
+			p.move(1, -1)
 		}
 	}
 	panic("not found")
 }
 
-func (m *Map) checkNoBeacon(p pos) bool {
+func (m *Map) checkPos(p pos) *sensor {
 	for _, s := range m.sensors {
-		if s.manhattanDist(p) <= s.dist {
-			return false
+		switch {
+		case s.beacon == p:
+			return &s
+		case s.manhattanDist(p) <= s.dist:
+			return &s
 		}
 	}
-	return true
+	return nil
 }
 
 func parseMap(input string) Map {
