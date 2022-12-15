@@ -3,7 +3,6 @@ package main
 import (
 	"math"
 	"strconv"
-	"strings"
 
 	"github.com/aibor/aoc/goutils"
 )
@@ -140,11 +139,11 @@ func parseMap(input string) Map {
 	iter := goutils.NewStringFieldsIterator(input)
 	for iter.Skip(2) {
 		var s sensor
-		s.x = goutils.MustBeInt(strings.Replace(iter.Value()[2:], ",", "", 1))
+		s.x = goutils.MustBeInt(iter.Value()[2 : len(iter.Value())-1])
 		iter.Next()
-		s.y = goutils.MustBeInt(strings.Replace(iter.Value()[2:], ":", "", 1))
+		s.y = goutils.MustBeInt(iter.Value()[2 : len(iter.Value())-1])
 		iter.Skip(5)
-		s.beacon.x = goutils.MustBeInt(strings.Replace(iter.Value()[2:], ",", "", 1))
+		s.beacon.x = goutils.MustBeInt(iter.Value()[2 : len(iter.Value())-1])
 		iter.Next()
 		s.beacon.y = goutils.MustBeInt(iter.Value()[2:])
 		s.init()
