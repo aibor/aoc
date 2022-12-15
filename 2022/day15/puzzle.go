@@ -74,13 +74,18 @@ type Map struct {
 
 func (m *Map) noBeaconCount(y int) int {
 	var i int
-	for x := m.minx; x <= m.maxx; x++ {
-		p := pos{x, y}
+	p := pos{m.minx, y}
+	for p.x <= m.maxx {
 		s := m.checkPos(p)
+		add := 1
 		if s != nil && s.beacon != p {
-			i++
-			continue
+			// skip to the other side
+			if s.x > p.x {
+				add = (s.x - p.x) * 2
+			}
+			i += add
 		}
+		p.move(add, 0)
 	}
 	return i
 }
@@ -121,10 +126,7 @@ func (m *Map) noBeaconPos(min, max int) pos {
 
 func (m *Map) checkPos(p pos) *sensor {
 	for _, s := range m.sensors {
-		switch {
-		case s.beacon == p:
-			return &s
-		case s.manhattanDist(p) <= s.dist:
+		if s.manhattanDist(p) <= s.dist {
 			return &s
 		}
 	}
