@@ -21,9 +21,10 @@ func part1(input string) string {
 
 	c := chamber{
 		movements: []byte(input),
+		cols:      make([][7]rune, 0, 8192),
 	}
 	c.drop(2022)
-	c.print()
+	//c.print()
 	result = c.top()
 
 	return strconv.Itoa(result)
@@ -36,7 +37,9 @@ func part2(input string) string {
 		movements: []byte(input),
 	}
 	//c.drop(1000000000000)
-	result = c.top()
+	c.drop(10000)
+	//c.print()
+	//result = c.top()
 
 	return strconv.Itoa(result)
 }
@@ -111,18 +114,22 @@ func newShape(i int) shape {
 }
 
 type chamber struct {
-	cols      [7][4096]rune
+	cols      [][7]rune
 	tops      [7]int
 	movements []byte
+	offset    int
 }
 
 func (c *chamber) drop(rocks int) {
+	var s shape
 	iter := goutils.NewIterator(c.movements)
 	si := 0
 	for r := 0; r < rocks; r++ {
-		s := newShape(si % 5)
+		s = newShape(si % 5)
 		si++
-		s.x, s.y = 2, c.top()+4+s.height
+		newRows := 4 + s.height
+		c.cols = append(c.cols, make([][7]rune, newRows)...)
+		s.x, s.y = 2, c.top()+newRows
 		for c.dist(s) > 1 {
 			s.y--
 			if !iter.Next() || iter.Value() == '\n' {
@@ -132,14 +139,20 @@ func (c *chamber) drop(rocks int) {
 			c.push(&s, iter.Value())
 		}
 		c.put(s)
+		//p := c.findPattern(s.y)
+		//if p != 0 {
+		//	l := len(c.cols)
+		//	c.cols = c.cols[:l-p]
+		//	c.offset += p
+		////	//fmt.Println(p)
+		//}
 	}
 }
 
 func (c *chamber) print() {
 	y := c.top()
 	for y > 0 {
-		for x := range c.cols {
-			r := c.cols[x][y]
+		for _, r := range c.cols[y] {
 			if r == 0 {
 				r = ' '
 			}
@@ -158,7 +171,7 @@ func (c *chamber) dist(s shape) int {
 				continue
 			}
 			d := 1
-			for s.y-y-d > 0 && c.cols[s.x+x][s.y-y-d] == 0 {
+			for s.y-y-d > 0 && c.cols[s.y-y-d][s.x+x] == 0 {
 				d++
 			}
 			if d < min {
@@ -179,7 +192,7 @@ func (c *chamber) put(s shape) {
 			if !field {
 				continue
 			}
-			c.cols[s.x+x][s.y-y] = s.ind
+			c.cols[s.y-y][s.x+x] = s.ind
 			if c.tops[s.x+x] < s.y-y {
 				c.tops[s.x+x] = s.y - y
 			}
@@ -203,7 +216,7 @@ func (c *chamber) push(s *shape, dir byte) {
 		if s.x > 0 {
 			for y, line := range s.fields[:s.height] {
 				for x, field := range line[:s.width] {
-					if field && c.cols[s.x+x-1][s.y-y] != 0 {
+					if field && c.cols[s.y-y][s.x+x-1] != 0 {
 						return
 					}
 				}
@@ -214,7 +227,7 @@ func (c *chamber) push(s *shape, dir byte) {
 		if s.x+s.width < 7 {
 			for y := range s.fields[:s.height] {
 				for x := s.width - 1; x >= 0; x-- {
-					if s.fields[y][x] && c.cols[s.x+x+1][s.y-y] != 0 {
+					if s.fields[y][x] && c.cols[s.y-y][s.x+x+1] != 0 {
 						return
 					}
 				}
@@ -222,4 +235,20 @@ func (c *chamber) push(s *shape, dir byte) {
 			s.x++
 		}
 	}
+}
+
+func (c *chamber) findPattern(y int) int {
+	if y < 1601 {
+		return 0
+	}
+main:
+	for d := 60; d <= 800; d++ {
+		for i, l := range c.cols[y-d : y] {
+			if l != c.cols[y-d*2+i] {
+				continue main
+			}
+		}
+		return d
+	}
+	return 0
 }
