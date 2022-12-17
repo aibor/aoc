@@ -9,11 +9,10 @@ import (
 
 var (
 	exampleResult1 = "3068"
-	//exampleResult2 = "1514285714288"
-	exampleResult2 = "0"
+	exampleResult2 = "1514285714288"
 
 	result1 = "3083"
-	result2 = "0"
+	result2 = "1532183908048"
 )
 
 func part1(input string) string {
@@ -24,8 +23,7 @@ func part1(input string) string {
 		cols:      make([][7]rune, 0, 8192),
 	}
 	c.drop(2022)
-	//c.print()
-	result = c.top()
+	result = c.top() + c.offset
 
 	return strconv.Itoa(result)
 }
@@ -35,11 +33,10 @@ func part2(input string) string {
 
 	c := chamber{
 		movements: []byte(input),
+		cols:      make([][7]rune, 0, 65536),
 	}
-	//c.drop(1000000000000)
-	c.drop(10000)
-	//c.print()
-	//result = c.top()
+	c.drop(1000000000000)
+	result = c.top() + c.offset
 
 	return strconv.Itoa(result)
 }
@@ -124,6 +121,9 @@ func (c *chamber) drop(rocks int) {
 	var s shape
 	iter := goutils.NewIterator(c.movements)
 	si := 0
+	py := 0
+	pyr := 0
+	p := 0
 	for r := 0; r < rocks; r++ {
 		s = newShape(si % 5)
 		si++
@@ -139,13 +139,20 @@ func (c *chamber) drop(rocks int) {
 			c.push(&s, iter.Value())
 		}
 		c.put(s)
-		//p := c.findPattern(s.y)
-		//if p != 0 {
-		//	l := len(c.cols)
-		//	c.cols = c.cols[:l-p]
-		//	c.offset += p
-		////	//fmt.Println(p)
-		//}
+		if c.offset == 0 && p != 0 {
+			if py == 0 {
+				py = s.y
+				pyr = r
+			} else if s.y == py+p {
+				l := rocks - r
+				pyp := r - pyr
+				skip := (l / (r - pyr))
+				c.offset = p * skip
+				r += skip * pyp
+			}
+		} else {
+			p = c.findPattern(s.y)
+		}
 	}
 }
 
@@ -238,11 +245,11 @@ func (c *chamber) push(s *shape, dir byte) {
 }
 
 func (c *chamber) findPattern(y int) int {
-	if y < 1601 {
+	if y < 21001 {
 		return 0
 	}
 main:
-	for d := 60; d <= 800; d++ {
+	for d := 50; d <= 10500; d++ {
 		for i, l := range c.cols[y-d : y] {
 			if l != c.cols[y-d*2+i] {
 				continue main
