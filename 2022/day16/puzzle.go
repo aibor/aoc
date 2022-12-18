@@ -22,7 +22,7 @@ func part1(input string) string {
 	t := parseNodes(input)
 
 	c := t["AA"]
-	result = t.bestPath(c, []string{}, 30, 0)
+	result = t.bestPath(c, nil, 30, 0)
 
 	return strconv.Itoa(result)
 }
@@ -97,31 +97,29 @@ func (ns *nodes) get(name string) *node {
 	return n
 }
 
-func (ns *nodes) bestPath(start *node, opened []string, t int, v int) int {
-	nr := make([]*node, 0, 64)
-	for m, e := range *ns {
-		var open bool
-		for _, o := range opened {
-			if m == o {
-				open = true
+func (ns *nodes) bestPath(start *node, uo []*node, t int, v int) int {
+	if uo == nil {
+		uo = make([]*node, 0, 64)
+		for _, e := range *ns {
+			if e.rate > 0 {
+				uo = append(uo, e)
 			}
 		}
-		if !open && e.rate > 0 {
-			nr = append(nr, e)
-		}
+		sort.SliceStable(uo, func(i, j int) bool {
+			return uo[i].rate > uo[j].rate
+		})
 	}
-	if len(nr) < 1 || t < 1 {
+	if len(uo) < 1 || t < 1 {
 		return v
 	}
-	sort.SliceStable(nr, func(i, j int) bool {
-		return nr[i].rate > nr[j].rate
-	})
 
 	var max int
-	for _, e := range nr {
+	newuo := make([]*node, len(uo))
+	for i, e := range uo {
 		u := t - start.dist(e, nil, 0)
 		u--
-		nv := ns.bestPath(e, append(opened, e.name), u, v+u*e.rate)
+		copy(newuo, uo)
+		nv := ns.bestPath(e, append(newuo[:i], newuo[i+1:]...), u, v+u*e.rate)
 		if nv > max {
 			max = nv
 		}
