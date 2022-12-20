@@ -70,12 +70,10 @@ func (nl *numberList) mix(count int) {
 func (nl *numberList) coordinates() int {
 	var c int
 	r := nl.zero
-	for i := 1; i <= 3000; i++ {
-		r = r.Next()
-		if i%1000 == 0 {
-			v := r.Value.(int)
-			c += v
-		}
+	for i := 0; i < 3; i++ {
+		r = r.Move(1000)
+		v := r.Value.(int)
+		c += v
 	}
 	return c
 }
