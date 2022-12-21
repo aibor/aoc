@@ -20,19 +20,7 @@ func part1(input string) string {
 
 	ms := parseMonkeys(goutils.SplitInput(input))
 
-	var e bool
-	for !e {
-		for n, m := range ms.waiting {
-			d1, f1 := ms.solved[m.deps[0]]
-			d2, f2 := ms.solved[m.deps[1]]
-			if !f1 || !f2 {
-				continue
-			}
-			ms.solved[n] = m.op(d1, d2)
-			delete(ms.waiting, n)
-		}
-		result, e = ms.solved["root"]
-	}
+	result = ms["root"].yell()
 
 	return strconv.Itoa(result)
 }
@@ -52,43 +40,55 @@ type monkeyOp func(int, int) int
 func monkeyOps(op string) monkeyOp {
 	switch op {
 	case "+":
-		return func(a, b int) int {return a + b}
+		return func(a, b int) int { return a + b }
 	case "-":
-		return func(a, b int) int {return a - b}
+		return func(a, b int) int { return a - b }
 	case "*":
-		return func(a, b int) int {return a * b}
+		return func(a, b int) int { return a * b }
 	case "/":
-		return func(a, b int) int {return a / b}
+		return func(a, b int) int { return a / b }
 	}
 	panic("oh no")
 }
 
 type monkey struct {
-	deps [2]string
-	op monkeyOp
+	name       string
+	num        int
+	op         string
+	dep1, dep2 *monkey
 }
 
-type monkeys struct {
-	solved map[string]int
-	waiting map[string]monkey
+func (m *monkey) yell() int {
+	if m.num == 0 {
+		m.num = monkeyOps(m.op)(m.dep1.yell(), m.dep2.yell())
+	}
+	return m.num
+}
+
+type monkeys map[string]*monkey
+
+func (ms *monkeys) get(name string) *monkey {
+	m, e := (*ms)[name]
+	if !e {
+		m = &monkey{name: name}
+		(*ms)[name] = m
+	}
+	return m
 }
 
 func parseMonkeys(lines []string) monkeys {
-	m := monkeys{
-		solved: make(map[string]int, 8192),
-		waiting: make(map[string]monkey, 8192),
-	}
+	ms := make(monkeys, 8192)
 	for _, l := range lines {
 		f := strings.Fields(l)
 		name := f[0][:4]
+		m := ms.get(name)
 		if len(f) == 2 {
-			m.solved[name] = goutils.MustBeInt(f[1])
+			m.num = goutils.MustBeInt(f[1])
 			continue
 		}
-		m.waiting[name] = monkey{
-			deps: [2]string{f[1], f[3]},
-			op: monkeyOps(f[2]),
-		}
+		m.op = f[2]
+		m.dep1 = ms.get(f[1])
+		m.dep2 = ms.get(f[3])
 	}
-	return m
+	return ms
 }
