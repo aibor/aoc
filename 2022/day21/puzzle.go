@@ -9,17 +9,16 @@ import (
 
 var (
 	exampleResult1 = "152"
-	exampleResult2 = "0"
+	exampleResult2 = "301"
 
 	result1 = "38914458159166"
-	result2 = "0"
+	result2 = "3665520865940"
 )
 
 func part1(input string) string {
 	var result int
 
 	ms := parseMonkeys(goutils.SplitInput(input))
-
 	result = ms["root"].yell()
 
 	return strconv.Itoa(result)
@@ -28,9 +27,9 @@ func part1(input string) string {
 func part2(input string) string {
 	var result int
 
-	for _, line := range goutils.SplitInput(input) {
-		_ = line
-	}
+	ms := parseMonkeys(goutils.SplitInput(input))
+	ms["root"].op = "="
+	result = ms["root"].track("humn", 0)
 
 	return strconv.Itoa(result)
 }
@@ -58,11 +57,53 @@ type monkey struct {
 	dep1, dep2 *monkey
 }
 
+func (m *monkey) backOp(op string) monkeyOp {
+	switch op {
+	case "+":
+		op = "-"
+	case "-":
+		op = "+"
+	case "*":
+		op = "/"
+	case "/":
+		op = "*"
+	case "=":
+		return func(a, b int) int { return b }
+	}
+	return monkeyOps(op)
+}
+
 func (m *monkey) yell() int {
 	if m.num == 0 {
 		m.num = monkeyOps(m.op)(m.dep1.yell(), m.dep2.yell())
 	}
 	return m.num
+}
+
+func (m *monkey) track(name string, val int) int {
+	if m.name == name {
+		return val
+	}
+	if m.dep1 != nil && m.dep1.hasDep(name) {
+		return m.dep1.track(name, m.backOp(m.op)(val, m.dep2.yell()))
+	}
+	if m.dep2 != nil && m.dep2.hasDep(name) {
+		var newVal int
+		if m.op == "/" || m.op == "-" {
+			newVal = monkeyOps(m.op)(m.dep1.yell(), val)
+		} else {
+			newVal = m.backOp(m.op)(val, m.dep1.yell())
+		}
+		return m.dep2.track(name, newVal)
+	}
+	panic("failtrack")
+}
+
+func (m *monkey) hasDep(name string) bool {
+	if m == nil {
+		return false
+	}
+	return m.name == name || m.dep1.hasDep(name) || m.dep2.hasDep(name)
 }
 
 type monkeys map[string]*monkey
