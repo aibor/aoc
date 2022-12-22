@@ -18,87 +18,22 @@ var (
 func part1(input string) string {
 	var result int
 
-	parts := strings.Split(strings.TrimRight(input, "\n"), "\n\n")
-	ll := len(parts[0])
-	var m [][]byte
-	for _, l := range strings.Split(parts[0], "\n") {
-		k := make([]byte, ll)
-		copy(k, l)
-		m = append(m, k)
+	b, insts := parseInput(input)
+	l := pos{150, 200}
+	if len(insts) < 100 {
+		l.x, l.y = 16, 12
 	}
-	p := pos{0, 0}
-	for ; m[p.y][p.x] != '.'; p.x++ {
+	b.wrapFunc = func(n *pos) {
+		n.x = (n.x + l.x) % l.x
+		n.y = (n.y + l.y) % l.y
 	}
-	dir := 0
-	insts := parts[1]
-	c := map[int]byte{
-		0: '>',
-		1: 'v',
-		2: '<',
-		3: '^',
-	}
-	d := map[int]pos{
-		0: {1, 0},
-		1: {0, 1},
-		2: {-1, 0},
-		3: {0, -1},
-	}
-	for len(insts) > 0 {
-		instEnd := 1
-		switch insts[0] {
-		case 'L':
-			dir = (dir + 3) % 4
-		case 'R':
-			dir = (dir + 1) % 4
-		default:
-			instEnd = strings.IndexAny(insts, "LR")
-			if instEnd == -1 {
-				instEnd = len(insts)
-			}
-			dist := goutils.MustBeInt(insts[:instEnd])
-			n := p
-			for dist > 0 {
-				m[p.y][p.x] = c[dir]
-				n = n.add(d[dir])
-				if n.y >= len(m) {
-					n.y = 0
-					for len(m[n.y]) < n.x {
-						n.y++
-					}
-				} else if n.y < 0 {
-					n.y = len(m) - 1
-					for len(m[n.y]) < n.x {
-						n.y--
-					}
-				} else if n.x >= len(m[n.y]) {
-					n.x = 0
-				} else if n.x < 0 {
-					n.x = len(m[n.y]) - 1
-				}
-				if m[n.y][n.x] == '#' {
-					break
-				}
-				if m[n.y][n.x] == '.' || m[n.y][n.x] == '>' || m[n.y][n.x] == '<' || m[n.y][n.x] == 'v' || m[n.y][n.x] == '^' {
-					dist--
-					p = n
-				}
-				n.add(d[dir])
-			}
-		}
-		insts = insts[instEnd:]
-	}
-
-	result = 1000*(p.y+1) + 4*(p.x+1) + dir
+	result = b.findPassword(insts)
 
 	return strconv.Itoa(result)
 }
 
 func part2(input string) string {
 	var result int
-
-	for _, line := range goutils.SplitInput(input) {
-		_ = line
-	}
 
 	return strconv.Itoa(result)
 }
@@ -109,4 +44,84 @@ type pos struct {
 
 func (p pos) add(q pos) pos {
 	return pos{p.x + q.x, p.y + q.y}
+}
+
+type board struct {
+	fields   [][]byte
+	dir      int
+	p        pos
+	wrapFunc func(*pos)
+}
+
+func (b *board) turnLeft() {
+	b.dir = (b.dir + 3) % 4
+}
+
+func (b *board) turnRight() {
+	b.dir = (b.dir + 1) % 4
+}
+
+func (b *board) move(dist int) {
+	n := b.p
+	for dist > 0 {
+		b.fields[b.p.y][b.p.x] = dirChar[b.dir]
+		n = n.add(dirPos[b.dir])
+		b.wrapFunc(&n)
+		if b.fields[n.y][n.x] == '#' {
+			break
+		}
+		if b.fields[n.y][n.x] > '#' {
+			dist--
+			b.p = n
+		}
+	}
+}
+
+func (b *board) findPassword(insts string) int {
+	for len(insts) > 0 {
+		instEnd := 1
+		switch insts[0] {
+		case 'L':
+			b.turnLeft()
+		case 'R':
+			b.turnRight()
+		default:
+			instEnd = strings.IndexAny(insts, "LR")
+			if instEnd == -1 {
+				instEnd = len(insts)
+			}
+			b.move(goutils.MustBeInt(insts[:instEnd]))
+		}
+		insts = insts[instEnd:]
+	}
+
+	return 1000*(b.p.y+1) + 4*(b.p.x+1) + b.dir
+}
+
+var dirChar = map[int]byte{
+	0: '>',
+	1: 'v',
+	2: '<',
+	3: '^',
+}
+
+var dirPos = map[int]pos{
+	0: {1, 0},
+	1: {0, 1},
+	2: {-1, 0},
+	3: {0, -1},
+}
+
+func parseInput(input string) (board, string) {
+	parts := strings.Split(strings.TrimRight(input, "\n"), "\n\n")
+	ll := len(parts[0])
+	var b board
+	for _, l := range strings.Split(parts[0], "\n") {
+		k := make([]byte, ll)
+		copy(k, l)
+		b.fields = append(b.fields, k)
+	}
+	for ; b.fields[b.p.y][b.p.x] != '.'; b.p.x++ {
+	}
+	return b, parts[1]
 }
