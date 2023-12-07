@@ -33,7 +33,20 @@ func part2(input string) string {
 	var result int
 
 	for _, line := range goutils.SplitInput(input) {
-		_ = line
+		var minSet set
+		g := parseGame(line)
+		for _, s := range g.sets {
+			if s.red > minSet.red {
+				minSet.red = s.red
+			}
+			if s.green > minSet.green {
+				minSet.green = s.green
+			}
+			if s.blue > minSet.blue {
+				minSet.blue = s.blue
+			}
+		}
+		result += minSet.power()
 	}
 
 	return strconv.Itoa(result)
@@ -43,6 +56,10 @@ type set struct {
 	red   int
 	green int
 	blue  int
+}
+
+func (s *set) power() int {
+	return s.red * s.green * s.blue
 }
 
 type game struct {
