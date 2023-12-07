@@ -8,20 +8,12 @@ import (
 )
 
 func part1(input string) string {
-	var (
-		result int
-		hands  []*camelHand
-	)
+	var result int
 
-	i := goutils.NewStringFieldsIterator(input)
-	for i.Next() {
-		h := i.Value()
-		i.Next()
-		hands = append(hands, newCamelHand(h, i.MustBeInt()))
-	}
+	hands := parseHands(input, false)
 
 	sort.Slice(hands, func(i, j int) bool {
-		return hands[j].strongerThan(hands[i])
+		return hands[j].strongerThan(hands[i], false)
 	})
 
 	for idx, hand := range hands {
@@ -34,12 +26,36 @@ func part1(input string) string {
 func part2(input string) string {
 	var result int
 
-	for _, line := range goutils.SplitInput(input) {
-		_ = line
+	hands := parseHands(input, true)
+
+	sort.Slice(hands, func(i, j int) bool {
+		return hands[j].strongerThan(hands[i], true)
+	})
+
+	for idx, hand := range hands {
+		result += hand.bid * (idx + 1)
 	}
 
 	return strconv.Itoa(result)
 }
+
+func parseHands(input string, withJoker bool) []*camelHand {
+	var hands []*camelHand
+	i := goutils.NewStringFieldsIterator(input)
+	for i.Next() {
+		hand := i.Value()
+		i.Next()
+		hands = append(hands, &camelHand{
+			hand: hand,
+			typ:  classify(hand, withJoker),
+			bid:  i.MustBeInt()},
+		)
+	}
+
+	return hands
+}
+
+const joker = 'J'
 
 var cardRank = map[rune]int{
 	'2': 0,
@@ -55,6 +71,13 @@ var cardRank = map[rune]int{
 	'Q': 10,
 	'K': 11,
 	'A': 12,
+}
+
+func getCardRank(card rune, withJoker bool) int {
+	if withJoker && card == joker {
+		return -1
+	}
+	return cardRank[card]
 }
 
 type handType int
@@ -75,19 +98,29 @@ type camelHand struct {
 	bid  int
 }
 
-func newCamelHand(hand string, bid int) *camelHand {
-	return &camelHand{
-		hand: hand,
-		typ:  classify(hand),
-		bid:  bid,
-	}
-}
-
-func classify(hand string) handType {
+func classify(hand string, withJoker bool) handType {
 	// Get count of distinct cards labels of the given hand.
 	cardLabels := make(map[rune]int, 5)
 	for _, r := range hand {
 		cardLabels[r]++
+	}
+
+	if withJoker {
+		jokers, exist := cardLabels[joker]
+		delete(cardLabels, joker)
+		if exist {
+			var (
+				maxLabel rune
+				maxCount int
+			)
+			for label, count := range cardLabels {
+				if maxLabel == 0 || count > maxCount {
+					maxLabel = label
+					maxCount = count
+				}
+			}
+			cardLabels[maxLabel] += jokers
+		}
 	}
 
 	// Classify hand based on the combinations of label counts.
@@ -116,7 +149,7 @@ func classify(hand string) handType {
 	}
 }
 
-func (h *camelHand) strongerThan(other *camelHand) bool {
+func (h *camelHand) strongerThan(other *camelHand, withJoker bool) bool {
 	switch {
 	case h.typ > other.typ:
 		return true
@@ -124,8 +157,8 @@ func (h *camelHand) strongerThan(other *camelHand) bool {
 		return false
 	}
 	for idx, r := range h.hand {
-		ca := cardRank[r]
-		cb := cardRank[[]rune(other.hand)[idx]]
+		ca := getCardRank(r, withJoker)
+		cb := getCardRank([]rune(other.hand)[idx], withJoker)
 		switch {
 		case ca > cb:
 			return true
