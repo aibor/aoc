@@ -3,6 +3,7 @@ package main
 import (
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/aibor/aoc/goutils"
 )
@@ -23,11 +24,37 @@ func part1(input string) string {
 }
 
 func part2(input string) string {
-	var result int
+	var (
+		result int
+		mu     sync.Mutex
+		wg     sync.WaitGroup
+	)
 
-	for _, line := range goutils.SplitInput(input) {
-		_ = line
+	lines := goutils.SplitInput(input)
+	alm := parseAlmanac(lines[2:])
+	i := goutils.NewStringFieldsIterator(lines[0])
+	i.Next()
+	for i.Next() {
+		start := i.MustBeInt()
+		i.Next()
+		length := i.MustBeInt()
+		wg.Add(1)
+		go func(start, length int) {
+			defer wg.Done()
+			for i := start; i < start+length; i++ {
+				value := alm.run(i)
+				mu.Lock()
+
+				if result == 0 || value < result {
+
+					result = value
+				}
+				mu.Unlock()
+			}
+		}(start, length)
 	}
+
+	wg.Wait()
 
 	return strconv.Itoa(result)
 }
