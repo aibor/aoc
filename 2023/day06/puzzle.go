@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/aibor/aoc/goutils"
 )
@@ -11,28 +12,19 @@ func part1(input string) string {
 
 	races := parseRaces(input)
 	for _, r := range races {
-		// Detect the minimum hold time required to beat the record. Since the
-		// distance peaks at the median of race time, the number of options is
-		// 2 times the difference between the minimum holdTime and median race
-		// time.
-		holdTime := 1
-		for r.distance(holdTime) <= r.record {
-			holdTime++
-		}
-		result *= r.time + 1 - 2*holdTime
+		result *= r.options()
 	}
 
 	return strconv.Itoa(result)
 }
 
 func part2(input string) string {
-	var result int
-
-	for _, line := range goutils.SplitInput(input) {
-		_ = line
+	lines := goutils.SplitInput(input)
+	r := race{
+		goutils.MustBeInt(strings.Join(strings.Split(lines[0], " ")[1:], "")),
+		goutils.MustBeInt(strings.Join(strings.Split(lines[1], " ")[1:], "")),
 	}
-
-	return strconv.Itoa(result)
+	return strconv.Itoa(r.options())
 }
 
 func parseRaces(input string) []race {
@@ -59,4 +51,16 @@ func (r *race) distance(holdTime int) int {
 		return 0
 	}
 	return holdTime * (r.time - holdTime)
+}
+
+func (r *race) options() int {
+	// Detect the minimum hold time required to beat the record. Since the
+	// distance peaks at the median of race time, the number of options is
+	// 2 times the difference between the minimum holdTime and median race
+	// time.
+	holdTime := 1
+	for r.distance(holdTime) <= r.record {
+		holdTime++
+	}
+	return r.time + 1 - 2*holdTime
 }
