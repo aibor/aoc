@@ -21,10 +21,20 @@ func part1(input string) string {
 }
 
 func part2(input string) string {
-	var result int
+	var (
+		result int
+		cards  []scratchCard
+	)
 
 	for _, line := range goutils.SplitInput(input) {
-		_ = line
+		cards = append(cards, parseCard(line))
+	}
+
+	for idx, sc := range cards {
+		for i := 1; i <= sc.winningNumbers(); i++ {
+			cards[idx+i].copies += 1 + sc.copies
+		}
+		result += 1 + sc.copies
 	}
 
 	return strconv.Itoa(result)
@@ -33,6 +43,7 @@ func part2(input string) string {
 type scratchCard struct {
 	winning []int
 	numbers []int
+	copies  int
 }
 
 func parseCard(card string) scratchCard {
