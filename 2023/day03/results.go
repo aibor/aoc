@@ -5,5 +5,5 @@ var (
 	exampleResult2 = "467835"
 
 	result1 = "559667"
-	result2 = "0"
+	result2 = "86841457"
 )
