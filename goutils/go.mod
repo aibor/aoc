@@ -1,4 +1,4 @@
-module github.com/aibor/aoc
+module github.com/aibor/aoc/goutils
 
 go 1.19
 
