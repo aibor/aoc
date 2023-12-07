@@ -3,7 +3,6 @@ package main
 import (
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/aibor/aoc/goutils"
 )
@@ -13,6 +12,8 @@ func part1(input string) string {
 
 	lines := goutils.SplitInput(input)
 	alm := parseAlmanac(lines[2:])
+
+	// Run each seed through the algo as described.
 	for _, seed := range strings.Split(lines[0], " ")[1:] {
 		value := alm.run(goutils.MustBeInt(seed))
 		if result == 0 || value < result {
@@ -24,39 +25,42 @@ func part1(input string) string {
 }
 
 func part2(input string) string {
-	var (
-		result int
-		mu     sync.Mutex
-		wg     sync.WaitGroup
-	)
+	var seeds []valueRange
 
 	lines := goutils.SplitInput(input)
 	alm := parseAlmanac(lines[2:])
+
+	// Parse seed ranges.
 	i := goutils.NewStringFieldsIterator(lines[0])
 	i.Next()
 	for i.Next() {
-		start := i.MustBeInt()
+		rg := valueRange{start: i.MustBeInt()}
 		i.Next()
-		length := i.MustBeInt()
-		wg.Add(1)
-		go func(start, length int) {
-			defer wg.Done()
-			for i := start; i < start+length; i++ {
-				value := alm.run(i)
-				mu.Lock()
-
-				if result == 0 || value < result {
-
-					result = value
-				}
-				mu.Unlock()
-			}
-		}(start, length)
+		rg.length = i.MustBeInt()
+		seeds = append(seeds, rg)
 	}
 
-	wg.Wait()
+	// Run the algo reverse, recursively probing if the location maps to a
+	// value in a seed range.
+	for i := 0; i < 1<<32; i++ {
+		value := alm.runReverse(i)
+		for _, seed := range seeds {
+			if seed.includes(value) {
+				return strconv.Itoa(i)
+			}
+		}
+	}
 
-	return strconv.Itoa(result)
+	return ""
+}
+
+type valueRange struct {
+	start  int
+	length int
+}
+
+func (r *valueRange) includes(value int) bool {
+	return value >= r.start && value < r.start+r.length
 }
 
 type mapRange struct {
@@ -70,16 +74,22 @@ type valueMap struct {
 	ranges []mapRange
 }
 
-func (m *valueMap) run(value int) int {
+func (m *valueMap) run(value int, reverse bool) int {
 	for _, r := range m.ranges {
-		if value < r.sourceStart {
-			continue
+		var inStart, outStart int
+		if reverse {
+			inStart = r.destinationStart
+			outStart = r.sourceStart
+		} else {
+			inStart = r.sourceStart
+			outStart = r.destinationStart
 		}
-		if value >= r.sourceStart+r.length {
-			continue
+
+		rg := valueRange{inStart, r.length}
+		if rg.includes(value) {
+			value = outStart + (value - inStart)
+			break
 		}
-		value = r.destinationStart + (value - r.sourceStart)
-		break
 	}
 	return value
 }
@@ -88,7 +98,14 @@ type almanac []*valueMap
 
 func (a *almanac) run(value int) int {
 	for _, m := range *a {
-		value = m.run(value)
+		value = m.run(value, false)
+	}
+	return value
+}
+
+func (a *almanac) runReverse(value int) int {
+	for i := len(*a) - 1; i >= 0; i-- {
+		value = (*a)[i].run(value, true)
 	}
 	return value
 }
