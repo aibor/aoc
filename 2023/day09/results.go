@@ -2,8 +2,8 @@ package main
 
 var (
 	exampleResult1 = "114"
-	exampleResult2 = "0"
+	exampleResult2 = "2"
 
 	result1 = "1725987467"
-	result2 = "0"
+	result2 = "971"
 )
