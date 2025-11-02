@@ -1,0 +1,28 @@
+name: Rust 2024
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '2024/**'
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          2024/target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Run Tests
+      working-directory: ./2024
+      run: cargo test --lib  -- --test-threads 1
