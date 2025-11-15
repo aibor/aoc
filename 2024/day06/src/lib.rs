@@ -68,25 +68,27 @@ struct GuardPath<'a> {
     lab_map: &'a LabMap,
     pos: Position,
     dir: Direction,
-    visited: HashMap<Position, HashSet<Direction>>,
+    visited: HashMap<Position, [bool; 4]>,
     new_obstruction: Option<Position>,
 }
 
 impl<'a> GuardPath<'a> {
     fn mark_visited(&mut self) -> bool {
-        let v = self.visited.entry(self.pos).or_default();
-        v.insert(self.dir)
-    }
-
-    fn is_visited(&self, pos: &Position) -> bool {
-        self.visited.contains_key(pos)
+        if let Some(v) = self.visited.get_mut(&self.pos) {
+            v[self.dir as usize] = true;
+            return false;
+        }
+        let mut v = [false, false, false, false];
+        v[self.dir as usize] = true;
+        self.visited.insert(self.pos, v);
+        true
     }
 
     fn is_visited_dir(&self, pos: &Position, dir: &Direction) -> bool {
         let Some(v) = self.visited.get(pos) else {
             return false;
         };
-        v.contains(dir)
+        v[*dir as usize]
     }
 
     fn is_obstruction(&self, pos: &Position) -> bool {
@@ -107,11 +109,10 @@ impl<'a> GuardPath<'a> {
             '^'
         } else if self.lab_map.is_obstruction(pos) {
             '#'
-        } else if self.is_visited(pos) {
-            let e = self.visited.get(pos).unwrap();
-            if !e.contains(&Direction::Up) && !e.contains(&Direction::Down) {
+        } else if let Some(e) = self.visited.get(pos) {
+            if !e[Direction::Up as usize] && !e[Direction::Down as usize] {
                 '-'
-            } else if !e.contains(&Direction::Right) && !e.contains(&Direction::Left) {
+            } else if !e[Direction::Right as usize] && !e[Direction::Left as usize] {
                 '|'
             } else {
                 '+'
@@ -119,6 +120,16 @@ impl<'a> GuardPath<'a> {
         } else {
             '.'
         }
+    }
+
+    fn loops(&mut self) -> bool {
+        while self.next().is_some() {
+            if self.is_visited_dir(&self.pos, &self.dir) {
+                return true;
+            }
+            self.mark_visited();
+        }
+        false
     }
 }
 
@@ -166,33 +177,20 @@ pub fn part2(input: &str) -> usize {
     let lab_map = LabMap::new(input);
     let mut iter = lab_map.guard_path();
     let mut new_obstructions = HashSet::new();
+    let mut i = iter.clone();
 
     while let Some(op) = iter.next() {
-        iter.mark_visited();
-
-        if !op.is_move() {
-            continue;
-        };
-
-        let next = iter.pos.move_dir(&iter.dir);
-        if lab_map.guard == next || iter.is_visited(&next) || iter.is_obstruction(&next) {
-            continue;
-        }
-
-        let mut i = iter.clone();
-        i.new_obstruction = Some(next);
-
-        while i.next().is_some() {
-            if i.is_visited_dir(&i.pos, &i.dir) {
-                new_obstructions.insert(next);
-                break;
+        if iter.mark_visited() && op.is_move() {
+            i.new_obstruction = Some(iter.pos);
+            if i.loops() {
+                new_obstructions.insert(iter.pos);
             }
-            i.mark_visited();
         }
+
+        i = iter.clone();
     }
 
     new_obstructions.len()
 }
 
-// day02 example correct, with input wrong. :(
-aocutils::assert_parts!(41, 5067, 6, 1754);
+aocutils::assert_parts!(41, 5067, 6, 1793);
