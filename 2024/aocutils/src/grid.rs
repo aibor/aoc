@@ -1,4 +1,8 @@
-use std::{cell::LazyCell, str::FromStr};
+use std::{
+    cell::LazyCell,
+    ops::{Add, AddAssign, Sub, SubAssign},
+    str::FromStr,
+};
 
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 pub enum Direction {
@@ -43,6 +47,60 @@ impl Position {
             x: self.x + diff.x,
             y: self.y + diff.y,
         }
+    }
+
+    pub fn dist(&self, other: &Self) -> Self {
+        let mut x = self.x.abs_diff(other.x) as isize;
+        if self.x > other.x {
+            x = -x;
+        }
+
+        let mut y = self.y.abs_diff(other.y) as isize;
+        if self.y > other.y {
+            y = -y;
+        }
+
+        Self { x, y }
+    }
+}
+
+impl Add for Position {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self::Output {
+        Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
+impl AddAssign for Position {
+    fn add_assign(&mut self, other: Self) {
+        *self = Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        };
+    }
+}
+
+impl Sub for Position {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self::Output {
+        Self {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
+    }
+}
+
+impl SubAssign for Position {
+    fn sub_assign(&mut self, other: Self) {
+        *self = Self {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        };
     }
 }
 
