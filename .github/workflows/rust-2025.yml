@@ -1,0 +1,28 @@
+name: Rust 2025
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '2025/**'
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          2025/target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Run Tests
+      working-directory: ./2025
+      run: cargo test --lib  -- --test-threads 1
