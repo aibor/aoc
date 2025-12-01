@@ -14,17 +14,14 @@ fn increments(a: &i32, b: &i32) -> Option<bool> {
 }
 
 fn is_safe(report: &[i32]) -> Option<()> {
-    let mut iter = report.iter();
-    let first = iter.next()?;
-    let second = iter.next()?;
-    let inc = increments(first, second)?;
-    let mut previous = second;
+    let mut levels = report.windows(2);
+    let init_levels = levels.next()?;
+    let report_inc = increments(&init_levels[0], &init_levels[1])?;
 
-    for level in iter {
-        if inc != increments(previous, level)? {
+    for level_pair in levels {
+        if report_inc != increments(&level_pair[0], &level_pair[1])? {
             return None;
         }
-        previous = level;
     }
 
     Some(())

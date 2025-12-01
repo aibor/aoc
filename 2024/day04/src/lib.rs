@@ -32,12 +32,7 @@ impl WordSearch {
 }
 
 fn adjacents_dists(abs_dists: &[isize]) -> Vec<isize> {
-    let mut adj = Vec::new();
-    for a in abs_dists.iter() {
-        adj.push(*a);
-        adj.push(-a);
-    }
-    adj
+    Vec::from_iter(abs_dists.iter().flat_map(|a| [*a, -a]))
 }
 
 pub fn part1(input: &str) -> usize {
