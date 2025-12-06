@@ -1,12 +1,12 @@
-use std::{num::ParseIntError, ops::RangeInclusive};
+use std::ops::RangeInclusive;
 
 type IDRange = RangeInclusive<usize>;
 
 fn parse_id_range(s: &str) -> Result<IDRange, String> {
-    let (left, right) = s.split_once("-").ok_or("no delimiter found".to_string())?;
-    let start = left.parse().map_err(|e| ParseIntError::to_string(&e))?;
-    let end = right.parse().map_err(|e| ParseIntError::to_string(&e))?;
-    Ok(start..=end)
+    let (start, end) = s.split_once("-").ok_or("no delimiter found".to_string())?;
+    let to_int = |num: &str| num.parse::<usize>().map_err(|e| e.to_string());
+
+    Ok(to_int(start)?..=to_int(end)?)
 }
 
 fn parse_input(input: &str) -> Result<Vec<IDRange>, String> {
@@ -14,18 +14,32 @@ fn parse_input(input: &str) -> Result<Vec<IDRange>, String> {
 }
 
 fn repeated_two(id: &usize) -> bool {
-    let s = id.to_string();
-    if !s.len().is_multiple_of(2) {
-        return false;
-    }
-    let (left, right) = s.split_at(s.len() / 2);
-    left == right
+    let num_digits = id.ilog10() + 1;
+    let div = 10usize.pow(num_digits / 2);
+    id / div == id % div
 }
 
-fn repeated(id: &usize) -> bool {
-    let s = id.to_string();
-    let d = s.repeat(2);
-    d[1..(d.len() - 1)].contains(&s)
+fn repeated_any(id: &usize) -> bool {
+    let num_digits = id.ilog10() + 1;
+
+    (1..=(num_digits / 2)).rev().any(|i| {
+        if !num_digits.is_multiple_of(i) {
+            return false;
+        }
+
+        let div = 10usize.pow(i);
+        let pattern = id % div;
+        let mut current = id / div;
+
+        while current > 0 {
+            if current % div != pattern {
+                return false;
+            }
+            current /= div;
+        }
+
+        true
+    })
 }
 
 pub fn part1(input: &str) -> Result<usize, String> {
@@ -44,7 +58,7 @@ pub fn part2(input: &str) -> Result<usize, String> {
 
     let invalid_ids = id_ranges
         .into_iter()
-        .map(|r| r.filter(repeated).sum::<usize>())
+        .map(|r| r.filter(repeated_any).sum::<usize>())
         .sum();
 
     Ok(invalid_ids)
