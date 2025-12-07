@@ -1,5 +1,6 @@
 use std::{
     cell::LazyCell,
+    fmt::Display,
     ops::{Add, AddAssign, Sub, SubAssign},
     str::FromStr,
 };
@@ -13,14 +14,14 @@ pub enum Direction {
 }
 
 impl Direction {
-    pub fn diff(&self) -> Position {
+    pub fn diff(&self) -> Point {
         let (x, y) = match self {
             Self::Up => (0, 1),
             Self::Right => (1, 0),
             Self::Down => (0, -1),
             Self::Left => (-1, 0),
         };
-        Position { x, y }
+        Point { x, y }
     }
 
     pub fn rotate_right(&self) -> Self {
@@ -34,12 +35,12 @@ impl Direction {
 }
 
 #[derive(Debug, Default, Clone, Copy, Eq, Hash, PartialEq)]
-pub struct Position {
+pub struct Point {
     pub x: isize,
     pub y: isize,
 }
 
-impl Position {
+impl Point {
     pub fn move_dir(&self, dir: &Direction) -> Self {
         let diff = dir.diff();
 
@@ -64,7 +65,7 @@ impl Position {
     }
 }
 
-impl Add for Position {
+impl Add for Point {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
@@ -75,7 +76,7 @@ impl Add for Position {
     }
 }
 
-impl AddAssign for Position {
+impl AddAssign for Point {
     fn add_assign(&mut self, other: Self) {
         *self = Self {
             x: self.x + other.x,
@@ -84,7 +85,7 @@ impl AddAssign for Position {
     }
 }
 
-impl Sub for Position {
+impl Sub for Point {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self::Output {
@@ -95,12 +96,18 @@ impl Sub for Position {
     }
 }
 
-impl SubAssign for Position {
+impl SubAssign for Point {
     fn sub_assign(&mut self, other: Self) {
         *self = Self {
             x: self.x - other.x,
             y: self.y - other.y,
         };
+    }
+}
+
+impl Display for Point {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
     }
 }
 
@@ -122,53 +129,50 @@ impl FromStr for Grid {
 }
 
 impl Grid {
-    pub fn pos_from_str_idx(&self, idx: usize) -> Position {
+    pub fn point_from_str_idx(&self, idx: usize) -> Point {
         let line = idx / (self.width + 1);
-        Position {
+        Point {
             x: (idx % (self.width + 1)) as isize,
             y: (self.height - line - 1) as isize,
         }
     }
 
-    pub fn valid_pos(&self, pos: &Position) -> bool {
+    pub fn valid(&self, pos: &Point) -> bool {
         let rx = LazyCell::new(|| 0..self.width as isize);
         let ry = LazyCell::new(|| 0..self.height as isize);
         rx.contains(&pos.x) && ry.contains(&pos.y)
     }
 
     pub fn iter(&self) -> GridIterator<'_> {
-        let start = Position {
-            x: 0,
-            y: (self.height - 1) as isize,
-        };
         GridIterator {
             grid: self,
-            pos: start,
-            step: Position { x: 1, y: -1 },
+            pos: Point { x: 0, y: 0 },
+            step: Point { x: 1, y: 1 },
         }
     }
 
     pub fn line_iter(&self) -> GridIterator<'_> {
-        let start = Position {
+        let start = Point {
             x: 0,
             y: (self.height - 1) as isize,
         };
         GridIterator {
             grid: self,
             pos: start,
-            step: Position { x: 1, y: -1 },
+            step: Point { x: 1, y: -1 },
         }
     }
 }
 
 pub struct GridIterator<'a> {
     grid: &'a Grid,
-    pos: Position,
-    step: Position,
+    pos: Point,
+    step: Point,
 }
 
 impl<'a> Iterator for GridIterator<'a> {
-    type Item = Position;
+    type Item = Point;
+
     fn next(&mut self) -> Option<Self::Item> {
         let cur = self.pos;
         if cur.x == (self.grid.width - 1) as isize {
@@ -177,10 +181,6 @@ impl<'a> Iterator for GridIterator<'a> {
         } else {
             self.pos.x += self.step.x;
         }
-        if self.grid.valid_pos(&cur) {
-            Some(cur)
-        } else {
-            None
-        }
+        self.grid.valid(&cur).then_some(cur)
     }
 }

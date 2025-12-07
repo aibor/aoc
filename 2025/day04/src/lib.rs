@@ -1,18 +1,18 @@
 use std::{collections::HashSet, str::FromStr};
 
-use aocutils::grid::{Direction, Grid, Position};
+use aocutils::grid::{Direction, Grid, Point};
 
-fn paper_rolls(s: &str) -> Result<HashSet<Position>, String> {
+fn paper_rolls(s: &str) -> Result<HashSet<Point>, String> {
     let grid = Grid::from_str(s)?;
     let paper_rolls = HashSet::from_iter(s.char_indices().filter_map(|(i, c)| match c {
-        '@' => Some(grid.pos_from_str_idx(i)),
+        '@' => Some(grid.point_from_str_idx(i)),
         _ => None,
     }));
 
     Ok(paper_rolls)
 }
 
-fn is_accessible(paper_rolls: &HashSet<Position>, paper: &Position) -> bool {
+fn is_accessible(paper_rolls: &HashSet<Point>, paper: &Point) -> bool {
     let movements = [
         Direction::Right,
         Direction::Down,
