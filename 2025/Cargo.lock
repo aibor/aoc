@@ -47,3 +47,10 @@ version = "0.1.0"
 dependencies = [
  "aocutils",
 ]
+
+[[package]]
+name = "day07"
+version = "0.1.0"
+dependencies = [
+ "aocutils",
+]
