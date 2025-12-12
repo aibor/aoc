@@ -63,6 +63,12 @@ impl Point {
 
         Self { x, y }
     }
+
+    pub fn area(&self, other: &Self) -> usize {
+        let x = self.x.abs_diff(other.x) + 1;
+        let y = self.y.abs_diff(other.y) + 1;
+        x * y
+    }
 }
 
 impl Add for Point {
