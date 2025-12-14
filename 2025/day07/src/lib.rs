@@ -45,41 +45,46 @@ impl TachyonManifold {
         None
     }
 
-    fn beam<F>(&self, start: &Point, mut f: F)
-    where
-        F: FnMut(&Point, &(Point, Point)) -> bool,
-    {
-        let mut beams = VecDeque::from([*start]);
-
-        while let Some(beam) = beams.pop_front() {
-            let Some(splitter) = self.find_splitter(&beam) else {
-                continue;
-            };
-
-            let next = (
-                splitter.move_dir(&Direction::Left),
-                splitter.move_dir(&Direction::Right),
-            );
-
-            if f(&beam, &next) {
-                [next.0, next.1].iter().for_each(|pos| {
-                    if !beams.contains(pos) {
-                        beams.push_back(*pos);
-                    }
-                });
-            }
+    fn count_paths(&self, start: &Point, seen: &mut HashMap<Point, usize>) -> usize {
+        if let Some(paths) = seen.get(start) {
+            return *paths;
         }
+
+        let Some(splitter) = self.find_splitter(start) else {
+            return 1;
+        };
+
+        let left = splitter.move_dir(&Direction::Left);
+        let right = splitter.move_dir(&Direction::Right);
+
+        let paths = self.count_paths(&left, seen) + self.count_paths(&right, seen);
+
+        seen.insert(*start, paths);
+
+        paths
     }
 }
 
 pub fn part1(input: &str) -> Result<usize, String> {
     let tachyon_manifold: TachyonManifold = input.parse()?;
 
+    let mut beams = VecDeque::from([tachyon_manifold.start]);
     let mut splitters_seen = HashSet::new();
 
-    tachyon_manifold.beam(&tachyon_manifold.start, |_, splitter| {
-        splitters_seen.insert(*splitter)
-    });
+    while let Some(beam) = beams.pop_front() {
+        if let Some(splitter) = tachyon_manifold.find_splitter(&beam)
+            && splitters_seen.insert(splitter)
+        {
+            let left = splitter.move_dir(&Direction::Left);
+            let right = splitter.move_dir(&Direction::Right);
+
+            [left, right].iter().for_each(|pos| {
+                if !beams.contains(pos) {
+                    beams.push_back(*pos);
+                }
+            });
+        }
+    }
 
     Ok(splitters_seen.len())
 }
@@ -87,29 +92,10 @@ pub fn part1(input: &str) -> Result<usize, String> {
 pub fn part2(input: &str) -> Result<usize, String> {
     let tachyon_manifold: TachyonManifold = input.parse()?;
 
-    let mut beam_paths: HashMap<Point, usize> = HashMap::new();
+    let mut beams_seen: HashMap<Point, usize> = HashMap::new();
+    let timelines = tachyon_manifold.count_paths(&tachyon_manifold.start, &mut beams_seen);
 
-    tachyon_manifold.beam(&tachyon_manifold.start, |&hit_from, next| {
-        let mut paths = 1;
-        beam_paths.entry(hit_from).and_modify(|e| {
-            paths = *e;
-            *e = 0;
-        });
-
-        beam_paths
-            .entry(next.0)
-            .and_modify(|e| *e += paths)
-            .or_insert(paths);
-
-        beam_paths
-            .entry(next.1)
-            .and_modify(|e| *e += paths)
-            .or_insert(paths);
-
-        true
-    });
-
-    Ok(beam_paths.values().sum())
+    Ok(timelines)
 }
 
 aocutils::assert_parts!(21, 1581, 40, 73007003089792);
